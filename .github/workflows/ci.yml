@@ -20,7 +20,7 @@ jobs:
           php-version: '8.4'
           extensions: bcmath, gd, intl, pdo_pgsql, redis, zip
           coverage: none
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
@@ -59,7 +59,7 @@ jobs:
           php-version: '8.4'
           extensions: bcmath, gd, intl, pdo_pgsql, redis, zip
           coverage: none
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
