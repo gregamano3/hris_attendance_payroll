@@ -868,6 +868,26 @@ return [
             'can' => 'attendance.manage',
             'active' => ['holidays*'],
         ],
+        ['header' => 'PAYROLL'],
+        [
+            'text' => 'My payslips',
+            'route' => 'payroll.mine',
+            'icon' => 'bi bi-receipt',
+            'can' => 'payslips.view-own',
+        ],
+        [
+            'text' => 'Payroll runs',
+            'route' => 'payroll.runs.index',
+            'icon' => 'bi bi-cash-stack',
+            'can' => 'payroll.view',
+            'active' => ['payroll/runs*', 'payroll/payslips*'],
+        ],
+        [
+            'text' => 'Statutory rates',
+            'route' => 'payroll.statutory.index',
+            'icon' => 'bi bi-bank',
+            'can' => 'settings.manage',
+        ],
         ['header' => 'ADMINISTRATION', 'can' => 'users.manage'],
         [
             'text' => 'Users',

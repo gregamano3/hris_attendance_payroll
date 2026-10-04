@@ -92,6 +92,14 @@
         </div>
     </div>
 
+    <?php if($stats['last_payroll']): ?>
+        <div class="callout callout-success">
+            Latest finalized payroll: <strong><?php echo e($stats['last_payroll']['name']); ?></strong>, net pay <?php echo e($stats['last_payroll']['net']); ?>
+
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('payroll.view')): ?> · <a href="<?php echo e(route('payroll.runs.index')); ?>">Payroll runs</a><?php endif; ?>
+        </div>
+    <?php endif; ?>
+
     <div class="card">
         <div class="card-body">
             Welcome back, <strong><?php echo e(auth()->user()->name); ?></strong>.
