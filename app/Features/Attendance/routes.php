@@ -2,6 +2,7 @@
 
 use App\Features\Attendance\Clock\ClockController;
 use App\Features\Attendance\ImportTimeLogs\ImportTimeLogsController;
+use App\Features\Attendance\ManageDevices\DevicesController;
 use App\Features\Attendance\ManageHolidays\HolidaysController;
 use App\Features\Attendance\ManageLeaveTypes\LeaveTypesController;
 use App\Features\Attendance\ManageShifts\ShiftsController;
@@ -41,6 +42,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('shifts', ShiftsController::class)->except('show');
         Route::resource('holidays', HolidaysController::class)->except(['show', 'create']);
         Route::resource('leave-types', LeaveTypesController::class)->only(['index', 'store', 'update']);
+        Route::get('attendance/devices', [DevicesController::class, 'index'])->name('devices.index');
+        Route::post('attendance/devices', [DevicesController::class, 'store'])->name('devices.store');
+        Route::post('attendance/devices/{device}/token', [DevicesController::class, 'regenerate'])->name('devices.regenerate');
+        Route::patch('attendance/devices/{device}/toggle', [DevicesController::class, 'toggle'])->name('devices.toggle');
     });
 
     Route::prefix('leaves')->name('leaves.')->group(function () {

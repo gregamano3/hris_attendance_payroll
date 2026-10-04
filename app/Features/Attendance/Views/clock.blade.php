@@ -12,8 +12,10 @@
                     <div class="card-body py-5">
                         <div class="text-body-secondary">{{ now()->format('l, F j, Y') }}</div>
                         <div class="display-4 fw-semibold my-3" id="live-clock">{{ now()->format('g:i:s A') }}</div>
-                        <form method="post" action="{{ route('attendance.clock.store') }}">
+                        <form method="post" action="{{ route('attendance.clock.store') }}" id="clock-form" @if ($requiresLocation) data-requires-location @endif>
                             @csrf
+                            <input type="hidden" name="latitude" id="clock-latitude">
+                            <input type="hidden" name="longitude" id="clock-longitude">
                             <button type="submit" id="punch-button"
                                 class="btn btn-lg px-5 {{ $nextType->value === 'in' ? 'btn-success' : 'btn-danger' }}">
                                 <i class="bi {{ $nextType->value === 'in' ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right' }} me-1"></i>
@@ -21,6 +23,9 @@
                             </button>
                         </form>
                         <div class="small text-body-secondary mt-3">{{ $employee->full_name }} · {{ $employee->employee_no }}</div>
+                        @if ($requiresLocation)
+                            <div class="small text-body-secondary mt-1"><i class="bi bi-geo-alt"></i> Your location is checked against {{ $employee->branch->name }} when you clock in; only the distance is stored.</div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -52,6 +57,19 @@
 
 @push('js')
     <script>
+        document.getElementById('clock-form')?.addEventListener('submit', function (event) {
+            if (! this.hasAttribute('data-requires-location') || this.dataset.located) return;
+            event.preventDefault();
+            const form = this;
+            const submit = () => { form.dataset.located = '1'; form.submit(); };
+            if (! navigator.geolocation) return submit();
+            navigator.geolocation.getCurrentPosition((position) => {
+                document.getElementById('clock-latitude').value = position.coords.latitude;
+                document.getElementById('clock-longitude').value = position.coords.longitude;
+                submit();
+            }, submit, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+        });
+
         setInterval(() => {
             const el = document.getElementById('live-clock');
             if (el) el.textContent = new Date().toLocaleTimeString('en-PH', { timeZone: @json(config('app.timezone')) });

@@ -25,15 +25,32 @@ class ClockController
 
         return view('attendance::clock', [
             'employee' => $employee,
+            'requiresLocation' => app(ClockRestrictions::class)->requiresLocation($employee?->branch),
             'logs' => $logs,
             'nextType' => $employee ? $this->nextType($employee) : TimeLogType::In,
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ClockRestrictions $restrictions): RedirectResponse
     {
         $employee = $this->directory->forUser($request->user());
         abort_if($employee === null, 403, 'Your account is not linked to an employee record.');
+
+        $request->validate([
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        $check = $restrictions->check(
+            $employee->branch,
+            $request->ip(),
+            $request->filled('latitude') ? (float) $request->input('latitude') : null,
+            $request->filled('longitude') ? (float) $request->input('longitude') : null,
+        );
+
+        if (! $check['allowed']) {
+            return back()->with('error', $check['reason']);
+        }
 
         $type = $this->nextType($employee);
 
@@ -53,6 +70,7 @@ class ClockController
             'type' => $type,
             'source' => TimeLogSource::Web,
             'ip_address' => $request->ip(),
+            'distance_m' => $check['distance_m'],
             'created_by' => $request->user()?->id,
         ]);
 
