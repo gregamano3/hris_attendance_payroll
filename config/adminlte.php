@@ -789,6 +789,33 @@ return [
             'icon' => 'bi bi-speedometer2',
             'can' => 'dashboard.view',
         ],
+        [
+            'text' => 'My profile',
+            'route' => 'my-profile',
+            'icon' => 'bi bi-person-badge',
+        ],
+        ['header' => 'HRIS', 'can' => 'employees.view'],
+        [
+            'text' => 'Employees',
+            'route' => 'employees.index',
+            'icon' => 'bi bi-people',
+            'can' => 'employees.view',
+            'active' => ['employees*'],
+        ],
+        [
+            'text' => 'Departments',
+            'route' => 'departments.index',
+            'icon' => 'bi bi-diagram-3',
+            'can' => 'employees.manage',
+            'active' => ['departments*'],
+        ],
+        [
+            'text' => 'Positions',
+            'route' => 'positions.index',
+            'icon' => 'bi bi-briefcase',
+            'can' => 'employees.manage',
+            'active' => ['positions*'],
+        ],
         ['header' => 'ADMINISTRATION', 'can' => 'users.manage'],
         [
             'text' => 'Users',

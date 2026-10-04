@@ -2,8 +2,12 @@
 
 namespace App\Shared\Authorization;
 
+use App\Shared\Concerns\HasOptions;
+
 enum Role: string
 {
+    use HasOptions;
+
     case Admin = 'admin';
     case Hr = 'hr';
     case Payroll = 'payroll';
@@ -59,19 +63,5 @@ enum Role: string
                 Permission::PayslipsViewOwn,
             ],
         };
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public static function options(): array
-    {
-        $options = [];
-
-        foreach (self::cases() as $role) {
-            $options[$role->value] = $role->label();
-        }
-
-        return $options;
     }
 }
