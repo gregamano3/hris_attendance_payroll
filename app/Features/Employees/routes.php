@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
 
         Route::middleware('can:employees.view')->group(function () {
             Route::get('/', ListEmployeesController::class)->name('index');
+            Route::get('export.xlsx', [ListEmployeesController::class, 'export'])->name('export');
             Route::get('{employee}', ShowEmployeeController::class)->name('show');
         });
     });

@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('dtr', ShowDtrController::class)->middleware('can:attendance.view')->name('dtr');
         Route::get('dtr/{employee}/pdf', [PrintDtrController::class, 'forEmployee'])->middleware('can:attendance.view')->name('dtr.pdf');
+        Route::get('dtr/{employee}/xlsx', [PrintDtrController::class, 'xlsx'])->middleware('can:attendance.view')->name('dtr.xlsx');
 
         Route::middleware('can:attendance.manage')->group(function () {
             Route::get('logs', [TimeLogsController::class, 'index'])->name('logs.index');

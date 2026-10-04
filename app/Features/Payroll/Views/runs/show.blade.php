@@ -6,7 +6,10 @@
 @section('page_actions')
     <div class="d-flex flex-wrap gap-2">
         @if ($run->payslips()->exists())
-            <a href="{{ route('payroll.runs.register', $run) }}" class="btn btn-outline-secondary"><i class="bi bi-filetype-csv me-1"></i> Register</a>
+            <div class="btn-group">
+                <a href="{{ route('payroll.runs.register', $run) }}" class="btn btn-outline-secondary"><i class="bi bi-filetype-csv me-1"></i> Register</a>
+                <a href="{{ route('payroll.runs.register.xlsx', $run) }}" class="btn btn-outline-secondary" title="Excel"><i class="bi bi-file-earmark-excel"></i></a>
+            </div>
         @endif
         @if ($run->isLocked())
             <div class="dropdown">

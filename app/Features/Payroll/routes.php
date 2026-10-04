@@ -64,6 +64,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('runs/{run}', ShowPayrollRunController::class)->name('runs.show');
         Route::get('runs/{run}/status', [ProcessPayrollRunController::class, 'status'])->name('runs.status');
         Route::get('runs/{run}/register.csv', ExportRegisterController::class)->name('runs.register');
+        Route::get('runs/{run}/register.xlsx', [ExportRegisterController::class, 'xlsx'])->name('runs.register.xlsx');
         Route::get('runs/{run}/bank.{format}', ExportBankFileController::class)->where('format', '[a-z]+')->name('runs.bank');
         Route::get('allowances', [RecurringEarningsController::class, 'index'])->name('allowances.index');
         Route::get('loans', [LoansController::class, 'index'])->name('loans.index');
