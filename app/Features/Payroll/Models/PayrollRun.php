@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $name
  * @property PayrollRunType $type
+ * @property bool $annualize_tax
  * @property Carbon $period_start
  * @property Carbon $period_end
  * @property Carbon $pay_date
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $finalizer
  */
 #[Fillable([
-    'name', 'type', 'period_start', 'period_end', 'pay_date', 'status', 'progress', 'compute_error', 'employee_count', 'total_gross', 'total_deductions',
+    'name', 'type', 'annualize_tax', 'period_start', 'period_end', 'pay_date', 'status', 'progress', 'compute_error', 'employee_count', 'total_gross', 'total_deductions',
     'total_net', 'total_employer', 'notes', 'created_by', 'computed_at', 'finalized_by', 'finalized_at',
 ])]
 class PayrollRun extends Model
@@ -56,6 +57,7 @@ class PayrollRun extends Model
             'pay_date' => 'date',
             'status' => PayrollRunStatus::class,
             'type' => PayrollRunType::class,
+            'annualize_tax' => 'boolean',
             'total_gross' => MoneyCast::class,
             'total_deductions' => MoneyCast::class,
             'total_net' => MoneyCast::class,

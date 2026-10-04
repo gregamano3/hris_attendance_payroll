@@ -9,7 +9,7 @@ beforeEach(fn () => $this->admin = userWithRole(Role::Admin));
 
 it('records who created, updated and deleted a record with the changed values', function () {
     $hr = userWithRole(Role::Hr);
-    $employee = Employee::factory()->create(['first_name' => 'Ana']);
+    $employee = Employee::factory()->monthly(30000)->create(['first_name' => 'Ana']);
 
     $this->actingAs($hr)->put("/employees/{$employee->id}", [
         'employee_no' => $employee->employee_no, 'first_name' => 'Anna', 'last_name' => $employee->last_name,

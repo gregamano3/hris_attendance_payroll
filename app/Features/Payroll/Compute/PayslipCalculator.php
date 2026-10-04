@@ -40,6 +40,7 @@ class PayslipCalculator
         private float $overtimeRegular = 1.25,
         private float $overtimePremium = 1.30,
         private float $nightDifferential = 0.10,
+        private ?WithholdingTaxCalculator $annualTax = null,
     ) {}
 
     private const DAY_TYPE_LABELS = [
@@ -123,10 +124,28 @@ class PayslipCalculator
         $taxable = ($input->minimumWageEarner ? $taxableEarnings : $taxableEarnings->minus($employeeContributions))->max(Money::zero());
         $withholding = $this->tax->compute($taxable);
 
+        // Year-end annualization (last payroll of the year): withhold the
+        // balance of the annual tax due, or refund what was over-withheld.
+        if ($input->annualization !== null && $this->annualTax !== null) {
+            $annualTaxable = $input->annualization['taxable_to_date']->plus($taxable);
+            $due = $this->annualTax->compute($annualTaxable);
+            $balance = $due->minus($input->annualization['withheld_to_date']);
+            $withholding = $balance->max(Money::zero());
+
+            if ($balance->isNegative()) {
+                $refund = $balance->multipliedBy(-1);
+                $lines[] = new PayslipLine(PayslipLine::EARNING, 'TAX_REFUND', 'Refund of excess tax withheld (annualization)', $refund);
+                $gross = $gross->plus($refund);
+            }
+
+            $warnings[] = sprintf('Year-end annualization: annual taxable %s, tax due %s, withheld before this run %s.',
+                $annualTaxable->format(), $due->format(), $input->annualization['withheld_to_date']->format());
+        }
+
         $lines = [
             ...$lines,
             ...$contributions,
-            new PayslipLine(PayslipLine::DEDUCTION, 'TAX', 'Withholding tax', $withholding),
+            new PayslipLine(PayslipLine::DEDUCTION, 'TAX', $input->annualization !== null && $this->annualTax !== null ? 'Withholding tax (annualized)' : 'Withholding tax', $withholding),
             new PayslipLine(PayslipLine::EMPLOYER, 'SSS_ER', 'SSS (employer)', $share($sss['employer'])),
             new PayslipLine(PayslipLine::EMPLOYER, 'SSS_EC', 'SSS EC (employer)', $share($sss['ec'])),
             new PayslipLine(PayslipLine::EMPLOYER, 'PHILHEALTH_ER', 'PhilHealth (employer)', $share($philHealth['employer'])),

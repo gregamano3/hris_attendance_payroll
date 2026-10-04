@@ -58,6 +58,7 @@
 
     <p class="text-body-secondary">
         <span class="badge text-bg-light border">{{ $run->type->label() }}</span>
+        @if ($run->annualize_tax)<span class="badge text-bg-warning">Year-end annualization</span>@endif
         Period {{ $run->period()->label() }} · Pay date {{ $run->pay_date->format('M j, Y') }}
         @if ($run->finalized_at) · Finalized {{ $run->finalized_at->format('M j, Y g:i A') }} by {{ $run->finalizer?->name }} @endif
     </p>
