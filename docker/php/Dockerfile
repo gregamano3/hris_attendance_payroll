@@ -3,7 +3,7 @@
 ############################
 # Base: PHP-FPM + extensions
 ############################
-FROM php:8.4-fpm-alpine AS base
+FROM php:8.5-fpm-alpine AS base
 
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_HOME=/tmp/composer
