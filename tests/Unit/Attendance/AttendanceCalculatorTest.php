@@ -188,3 +188,44 @@ it('caps overtime at the approved minutes when approval is required', function (
         ->and($free->overtimeMinutes)->toBe(420)
         ->and($free->nightDiffMinutes)->toBe(120);
 });
+
+function halfDay(string $part, array $ins = [], array $outs = []): DayResult
+{
+    return (new AttendanceCalculator(overtimeThresholdMinutes: 30))->compute(new DayInput(
+        date: Carbon::parse('2026-10-05'),
+        shift: dayShift(), // 08:00–17:00, half = 4h30
+        timeIns: array_map(fn ($t) => Carbon::parse($t), $ins),
+        timeOuts: array_map(fn ($t) => Carbon::parse($t), $outs),
+        leaveRequestId: 7,
+        now: Carbon::parse('2026-12-31'),
+        halfDayLeave: $part,
+    ));
+}
+
+it('expects only the afternoon after a morning half-day leave', function () {
+    $onTime = halfDay('am', ['2026-10-05 12:30'], ['2026-10-05 17:00']);
+    $late = halfDay('am', ['2026-10-05 13:00'], ['2026-10-05 17:00']);
+
+    expect($onTime->status)->toBe(AttendanceStatus::Present)
+        ->and($onTime->workedMinutes)->toBe(240)
+        ->and($onTime->lateMinutes)->toBe(0)
+        ->and($onTime->leaveFraction)->toBe(0.5)
+        ->and($late->lateMinutes)->toBe(30)
+        ->and($late->workedMinutes)->toBe(210);
+});
+
+it('expects only the morning before an afternoon half-day leave', function () {
+    $day = halfDay('pm', ['2026-10-05 08:00'], ['2026-10-05 12:30']);
+
+    expect($day->workedMinutes)->toBe(240)->and($day->undertimeMinutes)->toBe(0);
+});
+
+it('marks a half-day leave without punches as absent for the other half', function () {
+    $day = halfDay('am');
+
+    expect($day->status)->toBe(AttendanceStatus::Absent)->and($day->leaveFraction)->toBe(0.5);
+});
+
+it('records a full leave fraction for full-day leaves', function () {
+    expect(computeDay('2026-10-05', dayShift(), extra: ['leave' => 9])->leaveFraction)->toBe(1.0);
+});

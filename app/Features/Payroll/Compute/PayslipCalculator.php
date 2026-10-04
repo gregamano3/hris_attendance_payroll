@@ -70,8 +70,8 @@ class PayslipCalculator
         $nightMinutes = [];      // day type => ND minutes
         $regularWorked = 0;
         $tardiness = 0;
-        $unpaidDays = 0;
-        $paidLeaveDays = 0;
+        $unpaidDays = 0.0;
+        $paidLeaveDays = 0.0;
         $holidayPayDays = 0;
 
         foreach ($input->days as $day) {
@@ -94,6 +94,12 @@ class PayslipCalculator
 
                     $overtimeMinutes[$type] = ($overtimeMinutes[$type] ?? 0) + $day->overtimeMinutes;
                     $nightMinutes[$type] = ($nightMinutes[$type] ?? 0) + $day->nightDiffMinutes;
+
+                    // Half-day leave: the leave half is paid leave or unpaid absence.
+                    if ($day->leaveFraction > 0) {
+                        $day->paidLeave ? $paidLeaveDays += $day->leaveFraction : $unpaidDays += $day->leaveFraction;
+                        $stats[$day->paidLeave ? 'paid_leave_days' : 'unpaid_leave_days'] += $day->leaveFraction;
+                    }
                     break;
 
                 case DayData::LEAVE:
@@ -116,7 +122,15 @@ class PayslipCalculator
 
                 case DayData::ABSENT:
                     $stats['days_absent']++;
-                    $unpaidDays++;
+
+                    // Absent on the working half of a paid half-day leave.
+                    if ($day->leaveFraction > 0 && $day->paidLeave) {
+                        $paidLeaveDays += $day->leaveFraction;
+                        $stats['paid_leave_days'] += $day->leaveFraction;
+                        $unpaidDays += 1 - $day->leaveFraction;
+                    } else {
+                        $unpaidDays++;
+                    }
                     break;
 
                 case DayData::INCOMPLETE:

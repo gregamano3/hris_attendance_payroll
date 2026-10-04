@@ -20,6 +20,8 @@ use Illuminate\Support\Carbon;
  *  - Rest days and holidays: everything worked counts, no late/undertime; time
  *    beyond the scheduled minutes is overtime.
  *  - Night differential: paid minutes between 22:00 and 06:00.
+ *  - Half-day leave: the morning (am) or afternoon (pm) half of the shift is
+ *    on leave; the other half follows the normal rules.
  */
 class AttendanceCalculator
 {
@@ -45,6 +47,19 @@ class AttendanceCalculator
         $isRestDay = ! $shift->isWorkDay($input->date);
         $start = $shift->startsAt($input->date);
         $end = $shift->endsAt($input->date);
+        $scheduled = $shift->scheduledMinutes();
+        $halfDay = $input->halfDayLeave !== null && $input->leaveRequestId !== null && ! $isRestDay;
+        $leaveFraction = match (true) {
+            $input->leaveRequestId === null || $isRestDay => 0.0,
+            $halfDay => 0.5,
+            default => 1.0,
+        };
+
+        if ($halfDay) {
+            $half = intdiv((int) $start->diffInMinutes($end), 2);
+            $input->halfDayLeave === 'am' ? $start = $start->copy()->addMinutes($half) : $end = $end->copy()->subMinutes($half);
+            $scheduled = intdiv($scheduled, 2);
+        }
 
         $timeIn = $this->earliest($input->timeIns);
         $timeOut = $this->latest(array_values(array_filter(
@@ -56,11 +71,12 @@ class AttendanceCalculator
             'isRestDay' => $isRestDay,
             'holiday' => $input->holiday,
             'leaveRequestId' => $input->leaveRequestId,
+            'leaveFraction' => $leaveFraction,
         ];
 
         if ($timeIn === null && $timeOut === null) {
             return new DayResult(...$base, status: match (true) {
-                $input->leaveRequestId !== null && ! $isRestDay => AttendanceStatus::OnLeave,
+                $input->leaveRequestId !== null && ! $isRestDay && ! $halfDay => AttendanceStatus::OnLeave,
                 $input->holiday !== null => AttendanceStatus::Holiday,
                 $isRestDay => AttendanceStatus::RestDay,
                 $now->lt($end) => AttendanceStatus::Upcoming,
@@ -71,8 +87,6 @@ class AttendanceCalculator
         if ($timeIn === null || $timeOut === null) {
             return new DayResult(...$base, status: AttendanceStatus::Incomplete, timeIn: $timeIn, timeOut: $timeOut);
         }
-
-        $scheduled = $shift->scheduledMinutes();
 
         // Worked on a rest day or holiday: no tardiness rules apply.
         if ($isRestDay || $input->holiday !== null) {

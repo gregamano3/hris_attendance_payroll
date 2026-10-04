@@ -3,6 +3,7 @@
 use App\Features\Attendance\Clock\ClockController;
 use App\Features\Attendance\ImportTimeLogs\ImportTimeLogsController;
 use App\Features\Attendance\ManageHolidays\HolidaysController;
+use App\Features\Attendance\ManageLeaveTypes\LeaveTypesController;
 use App\Features\Attendance\ManageShifts\ShiftsController;
 use App\Features\Attendance\ManageTimeLogs\TimeLogsController;
 use App\Features\Attendance\RequestLeave\LeaveRequestsController;
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function () {
         Route::post('shifts/assign', [ShiftsController::class, 'assign'])->name('shifts.assign');
         Route::resource('shifts', ShiftsController::class)->except('show');
         Route::resource('holidays', HolidaysController::class)->except(['show', 'create']);
+        Route::resource('leave-types', LeaveTypesController::class)->only(['index', 'store', 'update']);
     });
 
     Route::prefix('leaves')->name('leaves.')->group(function () {

@@ -81,6 +81,8 @@ class AttendanceSeeder extends Seeder
             LeaveType::query()->firstOrCreate(['code' => $code], [
                 'name' => $name, 'is_paid' => $paid, 'days_per_year' => $days,
                 'is_convertible' => in_array($code, ['VL', 'SIL'], true), // unused credits paid out on separation
+                'accrual_per_month' => in_array($code, ['VL', 'SL'], true) ? 1.25 : 0, // 15 days a year, earned monthly
+                'carry_over_cap' => $code === 'VL' ? 5 : 0,
             ]);
         }
 

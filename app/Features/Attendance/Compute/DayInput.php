@@ -24,5 +24,6 @@ final readonly class DayInput
         public ?int $leaveRequestId = null,
         public ?Carbon $now = null,
         public ?int $approvedOvertimeMinutes = null, // null = overtime needs no approval
+        public ?string $halfDayLeave = null, // am | pm: half of the shift is on leave
     ) {}
 }

@@ -12,12 +12,12 @@
                     <div class="card-header"><h3 class="card-title">Balances {{ today()->year }}</h3></div>
                     <div class="card-body p-0 table-responsive">
                         <table class="table table-sm mb-0">
-                            <thead><tr><th>Leave type</th><th class="text-end">Allowance</th><th class="text-end">Used / pending</th><th class="text-end">Remaining</th></tr></thead>
+                            <thead><tr><th>Leave type</th><th class="text-end">Credits</th><th class="text-end">Used / pending</th><th class="text-end">Remaining</th></tr></thead>
                             <tbody>
                                 @foreach ($balances as $balance)
                                     <tr>
                                         <td>{{ $balance['type']->name }} @unless ($balance['type']->is_paid)<span class="badge text-bg-secondary">Unpaid</span>@endunless</td>
-                                        <td class="text-end">{{ $balance['allowance'] ?: '—' }}</td>
+                                        <td class="text-end">{{ $balance['allowance'] ? rtrim(rtrim(number_format($balance['allowance'], 2), '0'), '.') : '—' }}</td>
                                         <td class="text-end">{{ rtrim(rtrim(number_format($balance['used'], 1), '0'), '.') }}</td>
                                         <td class="text-end">{{ $balance['remaining'] === null ? '—' : rtrim(rtrim(number_format($balance['remaining'], 1), '0'), '.') }}</td>
                                     </tr>
@@ -36,7 +36,8 @@
                                 @forelse ($requests as $leave)
                                     <tr>
                                         <td>{{ $leave->leaveType->name }}</td>
-                                        <td class="text-nowrap">{{ $leave->start_date->format('M j') }} – {{ $leave->end_date->format('M j, Y') }}</td>
+                                        <td class="text-nowrap">{{ $leave->start_date->format('M j') }} – {{ $leave->end_date->format('M j, Y') }}
+                                            @if ($leave->day_part !== 'full')<span class="badge text-bg-light border">{{ $leave->dayPartLabel() }}</span>@endif</td>
                                         <td class="text-end">{{ (float) $leave->days }}</td>
                                         <td><span class="badge text-bg-{{ $leave->status->badge() }}">{{ $leave->status->label() }}</span></td>
                                         <td class="small">{{ $leave->review_remarks }}</td>
@@ -69,6 +70,7 @@
                         <x-form.select name="leave_type_id" label="Leave type" :options="$leaveTypes" col="col-12" placeholder="Select…" required />
                         <x-form.input name="start_date" label="From" type="date" col="col-6" required />
                         <x-form.input name="end_date" label="To" type="date" col="col-6" required />
+                        <x-form.select name="day_part" label="Duration" :options="['full' => 'Whole day(s)', 'am' => 'Half day — morning', 'pm' => 'Half day — afternoon']" col="col-12" />
                         <x-form.textarea name="reason" label="Reason" rows="3" />
                     </div>
                     <div class="card-footer"><button class="btn btn-primary">Submit request</button></div>
