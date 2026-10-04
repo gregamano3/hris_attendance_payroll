@@ -6,6 +6,7 @@ use App\Features\Attendance\Enums\TimeLogSource;
 use App\Features\Attendance\Enums\TimeLogType;
 use App\Features\Employees\Models\Employee;
 use App\Models\User;
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['employee_id', 'logged_at', 'type', 'source', 'remarks', 'ip_address', 'created_by'])]
 class TimeLog extends Model
 {
-    use SoftDeletes;
+    use Auditable, SoftDeletes;
 
     /**
      * @return array<string, mixed>

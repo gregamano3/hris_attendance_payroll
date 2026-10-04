@@ -5,6 +5,7 @@ namespace App\Features\Payroll\Models;
 use App\Features\Employees\Models\Employee;
 use App\Features\Payroll\Enums\LoanStatus;
 use App\Features\Payroll\Enums\LoanType;
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -32,6 +33,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['employee_id', 'type', 'reference_no', 'principal', 'amortization', 'balance', 'starts_on', 'status', 'notes'])]
 class Loan extends Model
 {
+    use Auditable;
+
     public const LINE_PREFIX = 'LOAN_';
 
     /**

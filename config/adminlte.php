@@ -940,6 +940,12 @@ return [
             'can' => 'users.manage',
             'active' => ['users*'],
         ],
+        [
+            'text' => 'Audit log',
+            'route' => 'audit-log',
+            'icon' => 'bi bi-journal-text',
+            'can' => 'users.manage',
+        ],
     ],
 
     /*

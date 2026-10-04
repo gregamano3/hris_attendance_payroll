@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\Models;
 
 use App\Features\Payroll\Enums\StatutoryScheme;
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['scheme', 'effective_from', 'parameters'])]
 class StatutoryRate extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

@@ -2,6 +2,7 @@
 
 namespace App\Features\Attendance\Models;
 
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['code', 'name', 'is_paid', 'is_convertible', 'days_per_year', 'accrual_per_month', 'carry_over_cap'])]
 class LeaveType extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, string>
      */

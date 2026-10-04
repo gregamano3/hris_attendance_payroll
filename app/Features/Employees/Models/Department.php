@@ -2,6 +2,7 @@
 
 namespace App\Features\Employees\Models;
 
+use App\Shared\Audit\Auditable;
 use Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[UseFactory(DepartmentFactory::class)]
 class Department extends Model
 {
+    use Auditable;
+
     /** @use HasFactory<DepartmentFactory> */
     use HasFactory;
 

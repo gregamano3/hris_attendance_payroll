@@ -10,6 +10,7 @@ use App\Features\Employees\Enums\GovernmentId;
 use App\Features\Employees\Enums\RateType;
 use App\Features\Payroll\Models\FinalPay;
 use App\Models\User;
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use Database\Factories\EmployeeFactory;
@@ -71,6 +72,8 @@ use Illuminate\Support\Carbon;
 #[UseFactory(EmployeeFactory::class)]
 class Employee extends Model
 {
+    use Auditable;
+
     /** @use HasFactory<EmployeeFactory> */
     use HasFactory, SoftDeletes;
 

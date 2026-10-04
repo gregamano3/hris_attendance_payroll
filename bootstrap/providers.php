@@ -2,6 +2,7 @@
 
 use App\Features\Account\AccountServiceProvider;
 use App\Features\Attendance\AttendanceServiceProvider;
+use App\Features\AuditLog\AuditLogServiceProvider;
 use App\Features\Auth\AuthServiceProvider;
 use App\Features\Dashboard\DashboardServiceProvider;
 use App\Features\Employees\EmployeesServiceProvider;
@@ -16,6 +17,7 @@ return [
     // Feature slices
     AccountServiceProvider::class,
     AttendanceServiceProvider::class,
+    AuditLogServiceProvider::class,
     AuthServiceProvider::class,
     DashboardServiceProvider::class,
     EmployeesServiceProvider::class,

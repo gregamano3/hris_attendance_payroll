@@ -5,6 +5,7 @@ namespace App\Features\Payroll\Models;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Enums\PayrollRunType;
 use App\Models\User;
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use App\Shared\Period;
@@ -40,6 +41,8 @@ use Illuminate\Support\Carbon;
 ])]
 class PayrollRun extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

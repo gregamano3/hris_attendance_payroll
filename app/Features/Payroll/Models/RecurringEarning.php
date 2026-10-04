@@ -4,6 +4,7 @@ namespace App\Features\Payroll\Models;
 
 use App\Features\Employees\Models\Employee;
 use App\Features\Payroll\Enums\TaxTreatment;
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use App\Shared\Period;
@@ -27,6 +28,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['employee_id', 'label', 'amount', 'tax_treatment', 'starts_on', 'ends_on'])]
 class RecurringEarning extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

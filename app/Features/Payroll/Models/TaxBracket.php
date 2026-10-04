@@ -2,6 +2,7 @@
 
 namespace App\Features\Payroll\Models;
 
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,6 +21,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['effective_from', 'frequency', 'lower_bound', 'upper_bound', 'base_tax', 'rate'])]
 class TaxBracket extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

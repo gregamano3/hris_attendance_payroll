@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\Models;
 
 use App\Features\Employees\Models\Employee;
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['payroll_run_id', 'employee_id', 'kind', 'label', 'amount', 'taxable', 'created_by'])]
 class PayrollAdjustment extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */
