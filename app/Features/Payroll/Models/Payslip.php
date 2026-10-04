@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $employee_name
  * @property string|null $department
  * @property string|null $position
+ * @property string|null $branch
+ * @property string|null $cost_center
  * @property string $rate_type
  * @property Money $basic_rate
  * @property Money $daily_rate
@@ -36,7 +38,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Collection<int, PayslipLine> $lines
  */
 #[Fillable([
-    'payroll_run_id', 'employee_id', 'employee_no', 'employee_name', 'department', 'position', 'rate_type',
+    'payroll_run_id', 'employee_id', 'employee_no', 'employee_name', 'department', 'position', 'branch', 'cost_center', 'rate_type',
     'basic_rate', 'daily_rate', 'hourly_rate', 'is_minimum_wage_earner', 'gross_pay', 'taxable_income', 'total_deductions', 'net_pay',
     'employer_contributions', 'attendance', 'warnings',
 ])]

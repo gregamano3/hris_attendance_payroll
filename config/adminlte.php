@@ -821,6 +821,19 @@ return [
             'can' => 'employees.manage',
             'active' => ['positions*'],
         ],
+        [
+            'text' => 'Branches',
+            'route' => 'branches.index',
+            'icon' => 'bi bi-geo-alt',
+            'can' => 'employees.manage',
+            'active' => ['branches*'],
+        ],
+        [
+            'text' => 'Cost centers',
+            'route' => 'cost-centers.index',
+            'icon' => 'bi bi-pie-chart',
+            'can' => 'employees.manage',
+        ],
         ['header' => 'ATTENDANCE'],
         [
             'text' => 'Time clock',

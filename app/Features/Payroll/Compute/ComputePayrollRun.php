@@ -154,7 +154,7 @@ class ComputePayrollRun
     private function eligibleEmployees(PayrollRun $run): Collection
     {
         return Employee::query()
-            ->with(['department', 'position'])
+            ->with(['department', 'position', 'branch', 'costCenter'])
             ->whereDate('hired_at', '<=', $run->period_end)
             ->where(fn (Builder $q) => $q->whereNull('separated_at')->orWhereDate('separated_at', '>=', $run->period_start))
             ->orderBy('last_name')
@@ -233,6 +233,8 @@ class ComputePayrollRun
             'employee_name' => $employee->full_name,
             'department' => $employee->department?->name,
             'position' => $employee->position?->title,
+            'branch' => $employee->branch?->name,
+            'cost_center' => $employee->costCenter !== null ? "{$employee->costCenter->code} — {$employee->costCenter->name}" : null,
             'rate_type' => $employee->rate_type->value,
             'basic_rate' => $employee->basic_rate,
             'daily_rate' => $result->dailyRate,

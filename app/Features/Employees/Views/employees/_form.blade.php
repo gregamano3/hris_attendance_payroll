@@ -23,6 +23,9 @@
         <x-form.input name="employee_no" label="Employee no." :value="$employee->employee_no" col="col-md-4" required />
         <x-form.select name="department_id" label="Department" :options="$departments" :value="$employee->department_id" col="col-md-4" placeholder="— None —" />
         <x-form.select name="position_id" label="Position" :options="$positions" :value="$employee->position_id" col="col-md-4" placeholder="— None —" />
+        <x-form.select name="branch_id" label="Branch" :options="$branches" :value="$employee->branch_id" col="col-md-4" placeholder="— None —" />
+        <x-form.select name="cost_center_id" label="Cost center" :options="$costCenters" :value="$employee->cost_center_id" col="col-md-4" placeholder="— None —" />
+        <div class="col-md-4"></div>
         <x-form.select name="employment_type" label="Employment type" :options="$employmentTypes" :value="$employee->employment_type" col="col-md-4" required />
         <x-form.select name="status" label="Status" :options="$statuses" :value="$employee->status" col="col-md-4" required />
         <x-form.select name="user_id" label="Linked user account" :options="$users" :value="$employee->user_id" col="col-md-4" placeholder="— None —" />

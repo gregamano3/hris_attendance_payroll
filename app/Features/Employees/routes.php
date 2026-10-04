@@ -4,7 +4,9 @@ use App\Features\Employees\ArchiveEmployee\ArchiveEmployeeController;
 use App\Features\Employees\CreateEmployee\CreateEmployeeController;
 use App\Features\Employees\ImportEmployees\ImportEmployeesController;
 use App\Features\Employees\ListEmployees\ListEmployeesController;
+use App\Features\Employees\ManageBranches\BranchesController;
 use App\Features\Employees\ManageCompensation\CompensationController;
+use App\Features\Employees\ManageCostCenters\CostCentersController;
 use App\Features\Employees\ManageDepartments\DepartmentsController;
 use App\Features\Employees\ManageDocuments\DocumentsController;
 use App\Features\Employees\ManagePositions\PositionsController;
@@ -46,5 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:employees.manage')->group(function () {
         Route::resource('departments', DepartmentsController::class)->except('show');
         Route::resource('positions', PositionsController::class)->except('show');
+        Route::resource('branches', BranchesController::class)->except('show');
+        Route::resource('cost-centers', CostCentersController::class)->only(['index', 'store', 'destroy']);
     });
 });

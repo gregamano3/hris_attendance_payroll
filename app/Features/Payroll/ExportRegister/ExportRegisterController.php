@@ -25,13 +25,15 @@ class ExportRegisterController
         return response()->streamDownload(function () use ($payslips) {
             $out = fopen('php://output', 'w');
 
-            fputcsv($out, ['Employee no.', 'Name', 'Department', ...array_values(self::COLUMNS), 'Gross', 'Deductions', 'Net pay', 'Employer share']);
+            fputcsv($out, ['Employee no.', 'Name', 'Department', 'Branch', 'Cost center', ...array_values(self::COLUMNS), 'Gross', 'Deductions', 'Net pay', 'Employer share']);
 
             foreach ($payslips as $payslip) {
                 fputcsv($out, [
                     $payslip->employee_no,
                     $payslip->employee_name,
                     $payslip->department,
+                    $payslip->branch,
+                    $payslip->cost_center,
                     ...array_map(fn (string $code) => $this->sumByPrefix($payslip, $code), array_keys(self::COLUMNS)),
                     $payslip->gross_pay->toDecimal(),
                     $payslip->total_deductions->toDecimal(),

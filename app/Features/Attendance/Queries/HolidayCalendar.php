@@ -13,23 +13,34 @@ use Illuminate\Support\Facades\Cache;
 class HolidayCalendar
 {
     /**
+     * Nationwide holidays, plus the branch's local holidays when a branch is given.
+     *
      * @return array<string, array{name: string, type: string}> keyed by Y-m-d
      */
-    public function forYear(int $year): array
+    public function forYear(int $year, ?int $branchId = null): array
     {
-        return Cache::rememberForever(self::key($year), fn () => Holiday::query()
-            ->whereYear('date', $year)
-            ->orderBy('date')
-            ->get()
-            ->mapWithKeys(fn (Holiday $holiday) => [
-                $holiday->date->toDateString() => ['name' => $holiday->name, 'type' => $holiday->type->value],
-            ])
-            ->all());
+        $calendar = Cache::rememberForever(self::key($year), function () use ($year) {
+            $calendar = ['national' => [], 'branches' => []];
+
+            foreach (Holiday::query()->whereYear('date', $year)->orderBy('date')->get() as $holiday) {
+                $entry = ['name' => $holiday->name, 'type' => $holiday->type->value];
+                $holiday->branch_id === null
+                    ? $calendar['national'][$holiday->date->toDateString()] = $entry
+                    : $calendar['branches'][$holiday->branch_id][$holiday->date->toDateString()] = $entry;
+            }
+
+            return $calendar;
+        });
+
+        $holidays = [...$calendar['national'], ...($branchId !== null ? ($calendar['branches'][$branchId] ?? []) : [])];
+        ksort($holidays);
+
+        return $holidays;
     }
 
-    public function typeOn(Carbon $date): ?HolidayType
+    public function typeOn(Carbon $date, ?int $branchId = null): ?HolidayType
     {
-        $holiday = $this->forYear($date->year)[$date->toDateString()] ?? null;
+        $holiday = $this->forYear($date->year, $branchId)[$date->toDateString()] ?? null;
 
         return $holiday ? HolidayType::from($holiday['type']) : null;
     }

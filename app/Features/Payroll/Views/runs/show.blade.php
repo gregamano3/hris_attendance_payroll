@@ -139,6 +139,29 @@
         </div>
     </div>
 
+    @if ($costSummary->count() > 1)
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">By branch and cost center</h3></div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-sm mb-0" id="cost-summary">
+                    <thead><tr><th>Branch · cost center</th><th class="text-end">Employees</th><th class="text-end">Gross</th><th class="text-end">Net</th><th class="text-end">Employer share</th><th class="text-end">Total cost</th></tr></thead>
+                    <tbody>
+                        @foreach ($costSummary as $group => $totals)
+                            <tr>
+                                <td>{{ $group }}</td>
+                                <td class="text-end">{{ $totals['count'] }}</td>
+                                <td class="text-end">{{ $totals['gross']->format(false) }}</td>
+                                <td class="text-end">{{ $totals['net']->format(false) }}</td>
+                                <td class="text-end">{{ $totals['employer']->format(false) }}</td>
+                                <td class="text-end fw-semibold">{{ $totals['gross']->plus($totals['employer'])->format(false) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     @unless ($run->isThirteenthMonth())
     <div class="row">
         <div class="col-lg-8">

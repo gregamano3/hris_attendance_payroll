@@ -44,6 +44,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $mobile
  * @property string|null $address
  * @property int|null $department_id
+ * @property int|null $branch_id
+ * @property int|null $cost_center_id
  * @property int|null $position_id
  * @property int|null $supervisor_id
  * @property EmploymentType $employment_type
@@ -63,13 +65,15 @@ use Illuminate\Support\Carbon;
  * @property string|null $bank_account_no
  * @property-read string $full_name
  * @property-read Department|null $department
+ * @property-read Branch|null $branch
+ * @property-read CostCenter|null $costCenter
  * @property-read Position|null $position
  * @property-read User|null $user
  * @property-read Employee|null $supervisor
  */
 #[Fillable([
     'employee_no', 'user_id', 'first_name', 'middle_name', 'last_name', 'suffix', 'birth_date', 'gender',
-    'civil_status', 'email', 'mobile', 'address', 'department_id', 'position_id', 'supervisor_id', 'employment_type', 'status',
+    'civil_status', 'email', 'mobile', 'address', 'department_id', 'branch_id', 'cost_center_id', 'position_id', 'supervisor_id', 'employment_type', 'status',
     'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'basic_rate', 'is_minimum_wage_earner', 'sss_no', 'philhealth_no',
     'pagibig_no', 'tin', 'bank_name', 'bank_account_name', 'bank_account_no',
 ])]
@@ -116,6 +120,22 @@ class Employee extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * @return BelongsTo<Branch, $this>
+     */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * @return BelongsTo<CostCenter, $this>
+     */
+    public function costCenter(): BelongsTo
+    {
+        return $this->belongsTo(CostCenter::class);
     }
 
     /**

@@ -10,6 +10,7 @@
             <x-form.input name="date" label="Date" type="date" :value="$holiday->date->toDateString()" col="col-md-4" required />
             <x-form.input name="name" label="Name" :value="$holiday->name" col="col-md-4" required />
             <x-form.select name="type" label="Type" :options="$types" :value="$holiday->type" col="col-md-4" required />
+            <x-form.select name="branch_id" label="Applies to" :options="$branches" :value="$holiday->branch_id" col="col-md-4" placeholder="Nationwide" />
         </div>
         <div class="card-footer d-flex gap-2">
             <button class="btn btn-primary">Save</button>
