@@ -15,12 +15,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $payroll_run_id
  * @property int $employee_id
  * @property string $kind
+ * @property string|null $code
+ * @property int|null $source_run_id
  * @property string $label
  * @property Money $amount
  * @property bool $taxable
  * @property-read Employee $employee
  */
-#[Fillable(['payroll_run_id', 'employee_id', 'kind', 'label', 'amount', 'taxable', 'created_by'])]
+#[Fillable(['payroll_run_id', 'employee_id', 'kind', 'code', 'source_run_id', 'label', 'amount', 'taxable', 'created_by'])]
 class PayrollAdjustment extends Model
 {
     use Auditable;

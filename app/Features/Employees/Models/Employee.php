@@ -153,6 +153,14 @@ class Employee extends Model
     }
 
     /**
+     * @return HasMany<CompensationChange, $this>
+     */
+    public function compensationChanges(): HasMany
+    {
+        return $this->hasMany(CompensationChange::class)->orderByDesc('effective_from');
+    }
+
+    /**
      * @return HasMany<EmployeeDocument, $this>
      */
     public function documents(): HasMany

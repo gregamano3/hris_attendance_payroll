@@ -218,3 +218,25 @@ it('does not pay unworked regular holidays without eligibility', function () {
         ->and($monthly->amountOf('ABSENCES')->toDecimal())->toBe('-2400.00') // absence + unpaid holiday
         ->and($monthly->warnings)->toContain('1 regular holiday(s) unpaid: absent on the preceding work day.');
 });
+
+it('pro-rates a salary change inside the period', function () {
+    // ₱30,000 → ₱36,000 from Oct 9: 8 of 15 days at the old rate, 7 at the new one.
+    $days = [
+        new DayData('2026-10-08', DayData::ABSENT),   // old daily rate 1,379.31
+        new DayData('2026-10-12', DayData::ABSENT),   // new daily rate 1,655.17
+    ];
+
+    $result = payslipCalculator()->compute(new PayslipInput(
+        monthlyRated: true,
+        basicRate: Money::ofPesos(36000),
+        days: $days,
+        rateSegments: [['from' => null, 'rate' => Money::ofPesos(30000)], ['from' => '2026-10-09', 'rate' => Money::ofPesos(36000)]],
+        periodFrom: '2026-10-01',
+        periodTo: '2026-10-15',
+    ));
+
+    expect($result->amountOf('BASIC')->toDecimal())->toBe('16400.00')       // 15,000 × 8/15 + 18,000 × 7/15
+        ->and($result->amountOf('ABSENCES')->toDecimal())->toBe('-3034.48')  // 1,379.31 + 1,655.17
+        ->and($result->amountOf('SSS')->toDecimal())->toBe('875.00')         // contributions on the new rate
+        ->and($result->warnings)->toContain('Pro-rated for a salary change within the period.');
+});

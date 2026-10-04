@@ -4,6 +4,7 @@ use App\Features\Employees\ArchiveEmployee\ArchiveEmployeeController;
 use App\Features\Employees\CreateEmployee\CreateEmployeeController;
 use App\Features\Employees\ImportEmployees\ImportEmployeesController;
 use App\Features\Employees\ListEmployees\ListEmployeesController;
+use App\Features\Employees\ManageCompensation\CompensationController;
 use App\Features\Employees\ManageDepartments\DepartmentsController;
 use App\Features\Employees\ManageDocuments\DocumentsController;
 use App\Features\Employees\ManagePositions\PositionsController;
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
             Route::post('import', [ImportEmployeesController::class, 'store'])->name('import.store');
             Route::get('import/template.csv', [ImportEmployeesController::class, 'template'])->name('import.template');
             Route::post('{employee}/documents', [DocumentsController::class, 'store'])->name('documents.store');
+            Route::get('{employee}/compensation', [CompensationController::class, 'index'])->name('compensation.index');
+            Route::post('{employee}/compensation', [CompensationController::class, 'store'])->name('compensation.store');
+            Route::delete('{employee}/compensation/{change}', [CompensationController::class, 'destroy'])->name('compensation.destroy');
             Route::post('/', [CreateEmployeeController::class, 'store'])->name('store');
             Route::get('{employee}/edit', [UpdateEmployeeController::class, 'edit'])->name('edit');
             Route::put('{employee}', [UpdateEmployeeController::class, 'update'])->name('update');

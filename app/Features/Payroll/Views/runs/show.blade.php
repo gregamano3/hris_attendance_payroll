@@ -183,6 +183,17 @@
                     </div>
                     <div class="card-footer"><button class="btn btn-primary">Add</button></div>
                 </form>
+
+                <form method="post" action="{{ route('payroll.runs.back-pay', $run) }}" class="card">
+                    @csrf
+                    <div class="card-header"><h3 class="card-title">Back pay</h3></div>
+                    <div class="card-body row g-3">
+                        <p class="small text-body-secondary mb-0">After a retroactive salary change, adds the difference for every finalized run since the date.</p>
+                        <x-form.select name="employee_id" id="back_pay_employee" label="Employee" :options="$employees" col="col-12" placeholder="Select…" required />
+                        <x-form.input name="since" id="back_pay_since" label="Change effective from" type="date" col="col-12" required />
+                    </div>
+                    <div class="card-footer"><button class="btn btn-outline-primary">Compute back pay</button></div>
+                </form>
             </div>
         @endif
     </div>

@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\Compute;
 
 use App\Shared\Money\Money;
+use Illuminate\Support\Carbon;
 
 /**
  * Computes one employee's payslip for a semi-monthly run. Pure: all rates,
@@ -51,12 +52,6 @@ class PayslipCalculator
 
     public function compute(PayslipInput $input): PayslipResult
     {
-        $daily = $input->monthlyRated
-            ? $input->basicRate->multipliedBy(12)->dividedBy($this->daysPerYear)
-            : $input->basicRate;
-        $minutesPerDay = $this->hoursPerDay * 60;
-        $forMinutes = fn (int $minutes, float $factor = 1.0): Money => $daily->multipliedBy($minutes / $minutesPerDay * $factor);
-
         $lines = [];
         $warnings = [];
         $stats = [
@@ -64,6 +59,128 @@ class PayslipCalculator
             'unpaid_leave_days' => 0, 'holiday_days' => 0, 'late_minutes' => 0, 'undertime_minutes' => 0,
             'overtime_minutes' => 0, 'night_diff_minutes' => 0,
         ];
+
+        // Earnings are computed per rate segment (a salary change inside the
+        // period splits it); contributions and tax are computed once below.
+        $segments = $input->rateSegments ?: [['from' => null, 'rate' => $input->basicRate]];
+        $periodDays = $input->periodFrom !== null && $input->periodTo !== null
+            ? (int) Carbon::parse($input->periodFrom)->diffInDays(Carbon::parse($input->periodTo)) + 1
+            : null;
+
+        foreach ($segments as $i => $segment) {
+            $next = $segments[$i + 1]['from'] ?? null;
+            $segmentDays = array_values(array_filter($input->days, fn (DayData $d) => ($segment['from'] === null || $d->date >= $segment['from'])
+                && ($next === null || $d->date < $next)));
+
+            $share = 1.0;
+
+            if (count($segments) > 1 && $periodDays !== null) {
+                $from = max($segment['from'] ?? $input->periodFrom, $input->periodFrom);
+                $to = $next !== null ? Carbon::parse($next)->subDay()->toDateString() : $input->periodTo;
+                $share = ((int) Carbon::parse($from)->diffInDays(Carbon::parse($to)) + 1) / $periodDays;
+            }
+
+            $lines = $this->mergeLines($lines, $this->earningLines($input, $segmentDays, $segment['rate'], $share, $stats));
+        }
+
+        if (count($segments) > 1) {
+            $warnings[] = 'Pro-rated for a salary change within the period.';
+        }
+
+        $daily = $this->dailyRate($input->monthlyRated, $input->basicRate);
+
+        // Adjustments, recurring allowances and loan amortizations
+        foreach ($input->adjustments as $adjustment) {
+            $lines[] = $adjustment['kind'] === PayslipLine::EARNING
+                ? new PayslipLine(PayslipLine::EARNING, $adjustment['code'] ?? 'ALLOWANCE', $adjustment['label'], $adjustment['amount'], taxable: $adjustment['taxable'])
+                : new PayslipLine(PayslipLine::DEDUCTION, $adjustment['code'] ?? 'OTHER_DEDUCTION', $adjustment['label'], $adjustment['amount']);
+        }
+
+        if ($input->minimumWageEarner) {
+            $lines = array_map(fn (PayslipLine $l) => $l->code === 'ALLOWANCE' || $l->kind !== PayslipLine::EARNING ? $l
+                : new PayslipLine($l->kind, $l->code, $l->label, $l->amount, $l->quantity, $l->unit, taxable: false), $lines);
+        }
+
+        $gross = $this->sum($lines, PayslipLine::EARNING);
+        $taxableEarnings = $this->sum(array_filter($lines, fn (PayslipLine $l) => $l->taxable), PayslipLine::EARNING);
+
+        // Statutory contributions on the monthly equivalent compensation
+        $monthly = $input->monthlyRated ? $input->basicRate : $daily->multipliedBy($this->daysPerYear / 12);
+        $sss = $this->sss->monthly($monthly);
+        $philHealth = $this->philHealth->monthly($monthly);
+        $pagIbig = $this->pagIbig->monthly($monthly);
+        $share = fn (Money $amount) => $amount->multipliedBy($this->contributionFraction);
+
+        $contributions = [
+            new PayslipLine(PayslipLine::DEDUCTION, 'SSS', 'SSS contribution', $share($sss['employee'])),
+            new PayslipLine(PayslipLine::DEDUCTION, 'PHILHEALTH', 'PhilHealth contribution', $share($philHealth['employee'])),
+            new PayslipLine(PayslipLine::DEDUCTION, 'PAGIBIG', 'Pag-IBIG contribution', $share($pagIbig['employee'])),
+        ];
+        $employeeContributions = $this->sum($contributions, PayslipLine::DEDUCTION);
+
+        // Contributions reduce taxable pay, except for minimum wage earners whose
+        // contributions relate to their exempt wages.
+        $taxable = ($input->minimumWageEarner ? $taxableEarnings : $taxableEarnings->minus($employeeContributions))->max(Money::zero());
+        $withholding = $this->tax->compute($taxable);
+
+        $lines = [
+            ...$lines,
+            ...$contributions,
+            new PayslipLine(PayslipLine::DEDUCTION, 'TAX', 'Withholding tax', $withholding),
+            new PayslipLine(PayslipLine::EMPLOYER, 'SSS_ER', 'SSS (employer)', $share($sss['employer'])),
+            new PayslipLine(PayslipLine::EMPLOYER, 'SSS_EC', 'SSS EC (employer)', $share($sss['ec'])),
+            new PayslipLine(PayslipLine::EMPLOYER, 'PHILHEALTH_ER', 'PhilHealth (employer)', $share($philHealth['employer'])),
+            new PayslipLine(PayslipLine::EMPLOYER, 'PAGIBIG_ER', 'Pag-IBIG (employer)', $share($pagIbig['employer'])),
+        ];
+
+        $deductions = $this->sum($lines, PayslipLine::DEDUCTION);
+        $net = $gross->minus($deductions);
+
+        if (($stats['holidays_unpaid'] ?? 0) > 0) {
+            $warnings[] = "{$stats['holidays_unpaid']} regular holiday(s) unpaid: absent on the preceding work day.";
+        }
+
+        if ($stats['days_incomplete'] > 0) {
+            $warnings[] = "{$stats['days_incomplete']} day(s) with incomplete punches were treated as unpaid.";
+        }
+
+        if ($net->isNegative()) {
+            $warnings[] = 'Net pay is negative.';
+        }
+
+        return new PayslipResult(
+            dailyRate: $daily,
+            hourlyRate: $daily->dividedBy($this->hoursPerDay),
+            lines: array_values(array_filter($lines, fn (PayslipLine $l) => ! $l->amount->isZero() || in_array($l->code, ['BASIC', 'SSS', 'PHILHEALTH', 'PAGIBIG', 'TAX'], true))),
+            grossPay: $gross,
+            taxableIncome: $taxable,
+            totalDeductions: $deductions,
+            netPay: $net,
+            employerContributions: $this->sum($lines, PayslipLine::EMPLOYER),
+            attendance: $stats,
+            warnings: $warnings,
+        );
+    }
+
+    private function dailyRate(bool $monthlyRated, Money $basicRate): Money
+    {
+        return $monthlyRated ? $basicRate->multipliedBy(12)->dividedBy($this->daysPerYear) : $basicRate;
+    }
+
+    /**
+     * Attendance-based earnings for the days of one rate segment.
+     *
+     * @param  list<DayData>  $days
+     * @param  array<string, int|float>  $stats
+     * @return list<PayslipLine>
+     */
+    private function earningLines(PayslipInput $input, array $days, Money $basicRate, float $salaryShare, array &$stats): array
+    {
+        $daily = $this->dailyRate($input->monthlyRated, $basicRate);
+        $minutesPerDay = $this->hoursPerDay * 60;
+        $forMinutes = fn (int $minutes, float $factor = 1.0): Money => $daily->multipliedBy($minutes / $minutesPerDay * $factor);
+
+        $lines = [];
 
         $premiumMinutes = [];    // day type => worked minutes
         $overtimeMinutes = [];   // day type => OT minutes
@@ -74,7 +191,7 @@ class PayslipCalculator
         $paidLeaveDays = 0.0;
         $holidayPayDays = 0;
 
-        foreach ($input->days as $day) {
+        foreach ($days as $day) {
             $type = $day->dayType();
 
             switch ($day->status) {
@@ -148,7 +265,7 @@ class PayslipCalculator
 
         // Basic pay
         if ($input->monthlyRated) {
-            $lines[] = $this->earning('BASIC', 'Basic pay', $input->basicRate->multipliedBy($this->salaryFraction));
+            $lines[] = $this->earning('BASIC', 'Basic pay', $basicRate->multipliedBy($this->salaryFraction * $salaryShare));
 
             if ($unpaidDays > 0) {
                 $lines[] = $this->earning('ABSENCES', 'Less: absences / unpaid leave', $daily->multipliedBy(-$unpaidDays), $unpaidDays, 'days');
@@ -216,77 +333,33 @@ class PayslipCalculator
             $lines[] = $this->earning('NIGHT_DIFF', 'Night differential (10%)', $nightPay, round($nightTotal / 60, 2), 'hrs');
         }
 
-        // Adjustments, recurring allowances and loan amortizations
-        foreach ($input->adjustments as $adjustment) {
-            $lines[] = $adjustment['kind'] === PayslipLine::EARNING
-                ? new PayslipLine(PayslipLine::EARNING, $adjustment['code'] ?? 'ALLOWANCE', $adjustment['label'], $adjustment['amount'], taxable: $adjustment['taxable'])
-                : new PayslipLine(PayslipLine::DEDUCTION, $adjustment['code'] ?? 'OTHER_DEDUCTION', $adjustment['label'], $adjustment['amount']);
+        return $lines;
+    }
+
+    /**
+     * @param  list<PayslipLine>  $lines
+     * @param  list<PayslipLine>  $more
+     * @return list<PayslipLine>
+     */
+    private function mergeLines(array $lines, array $more): array
+    {
+        foreach ($more as $line) {
+            foreach ($lines as $i => $existing) {
+                if ($existing->code === $line->code && $existing->kind === $line->kind) {
+                    $lines[$i] = new PayslipLine(
+                        $existing->kind, $existing->code, $existing->label, $existing->amount->plus($line->amount),
+                        $existing->quantity === null && $line->quantity === null ? null : round(($existing->quantity ?? 0) + ($line->quantity ?? 0), 2),
+                        $existing->unit ?? $line->unit, $existing->taxable,
+                    );
+
+                    continue 2;
+                }
+            }
+
+            $lines[] = $line;
         }
 
-        if ($input->minimumWageEarner) {
-            $lines = array_map(fn (PayslipLine $l) => $l->code === 'ALLOWANCE' || $l->kind !== PayslipLine::EARNING ? $l
-                : new PayslipLine($l->kind, $l->code, $l->label, $l->amount, $l->quantity, $l->unit, taxable: false), $lines);
-        }
-
-        $gross = $this->sum($lines, PayslipLine::EARNING);
-        $taxableEarnings = $this->sum(array_filter($lines, fn (PayslipLine $l) => $l->taxable), PayslipLine::EARNING);
-
-        // Statutory contributions on the monthly equivalent compensation
-        $monthly = $input->monthlyRated ? $input->basicRate : $daily->multipliedBy($this->daysPerYear / 12);
-        $sss = $this->sss->monthly($monthly);
-        $philHealth = $this->philHealth->monthly($monthly);
-        $pagIbig = $this->pagIbig->monthly($monthly);
-        $share = fn (Money $amount) => $amount->multipliedBy($this->contributionFraction);
-
-        $contributions = [
-            new PayslipLine(PayslipLine::DEDUCTION, 'SSS', 'SSS contribution', $share($sss['employee'])),
-            new PayslipLine(PayslipLine::DEDUCTION, 'PHILHEALTH', 'PhilHealth contribution', $share($philHealth['employee'])),
-            new PayslipLine(PayslipLine::DEDUCTION, 'PAGIBIG', 'Pag-IBIG contribution', $share($pagIbig['employee'])),
-        ];
-        $employeeContributions = $this->sum($contributions, PayslipLine::DEDUCTION);
-
-        // Contributions reduce taxable pay, except for minimum wage earners whose
-        // contributions relate to their exempt wages.
-        $taxable = ($input->minimumWageEarner ? $taxableEarnings : $taxableEarnings->minus($employeeContributions))->max(Money::zero());
-        $withholding = $this->tax->compute($taxable);
-
-        $lines = [
-            ...$lines,
-            ...$contributions,
-            new PayslipLine(PayslipLine::DEDUCTION, 'TAX', 'Withholding tax', $withholding),
-            new PayslipLine(PayslipLine::EMPLOYER, 'SSS_ER', 'SSS (employer)', $share($sss['employer'])),
-            new PayslipLine(PayslipLine::EMPLOYER, 'SSS_EC', 'SSS EC (employer)', $share($sss['ec'])),
-            new PayslipLine(PayslipLine::EMPLOYER, 'PHILHEALTH_ER', 'PhilHealth (employer)', $share($philHealth['employer'])),
-            new PayslipLine(PayslipLine::EMPLOYER, 'PAGIBIG_ER', 'Pag-IBIG (employer)', $share($pagIbig['employer'])),
-        ];
-
-        $deductions = $this->sum($lines, PayslipLine::DEDUCTION);
-        $net = $gross->minus($deductions);
-
-        if (($stats['holidays_unpaid'] ?? 0) > 0) {
-            $warnings[] = "{$stats['holidays_unpaid']} regular holiday(s) unpaid: absent on the preceding work day.";
-        }
-
-        if ($stats['days_incomplete'] > 0) {
-            $warnings[] = "{$stats['days_incomplete']} day(s) with incomplete punches were treated as unpaid.";
-        }
-
-        if ($net->isNegative()) {
-            $warnings[] = 'Net pay is negative.';
-        }
-
-        return new PayslipResult(
-            dailyRate: $daily,
-            hourlyRate: $daily->dividedBy($this->hoursPerDay),
-            lines: array_values(array_filter($lines, fn (PayslipLine $l) => ! $l->amount->isZero() || in_array($l->code, ['BASIC', 'SSS', 'PHILHEALTH', 'PAGIBIG', 'TAX'], true))),
-            grossPay: $gross,
-            taxableIncome: $taxable,
-            totalDeductions: $deductions,
-            netPay: $net,
-            employerContributions: $this->sum($lines, PayslipLine::EMPLOYER),
-            attendance: $stats,
-            warnings: $warnings,
-        );
+        return $lines;
     }
 
     private function multiplier(string $type): float

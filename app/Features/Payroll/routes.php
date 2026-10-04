@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Payroll\ComputeBackPay\BackPayController;
 use App\Features\Payroll\CreatePayrollRun\CreatePayrollRunController;
 use App\Features\Payroll\ExportBankFile\ExportBankFileController;
 use App\Features\Payroll\ExportRegister\ExportRegisterController;
@@ -30,6 +31,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::post('runs/{run}/compute', [ProcessPayrollRunController::class, 'compute'])->name('runs.compute');
         Route::delete('runs/{run}', [ProcessPayrollRunController::class, 'destroy'])->name('runs.destroy');
         Route::post('runs/{run}/adjustments', [AdjustmentsController::class, 'store'])->name('runs.adjustments.store');
+        Route::post('runs/{run}/back-pay', BackPayController::class)->name('runs.back-pay');
         Route::delete('runs/{run}/adjustments/{adjustment}', [AdjustmentsController::class, 'destroy'])->name('runs.adjustments.destroy');
 
         Route::post('allowances', [RecurringEarningsController::class, 'store'])->name('allowances.store');
