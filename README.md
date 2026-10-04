@@ -21,6 +21,7 @@ Philippine payroll (SSS, PhilHealth, Pag-IBIG, BIR withholding tax).
 | HRIS       | Departments, positions, employee records, government IDs |
 | Attendance | Shifts, clock in/out, DTR, late/undertime/OT/night differential, holidays, leaves |
 | Payroll    | Semi-monthly runs, PH contributions & withholding tax, payslips |
+| API        | Token-authenticated REST API for integrations and mobile apps ([docs/api.md](docs/api.md)) |
 
 ## Quick start
 

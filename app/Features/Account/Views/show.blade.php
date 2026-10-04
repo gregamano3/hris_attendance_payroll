@@ -85,4 +85,11 @@
             @endif
         </div>
     </div>
+
+    <div class="card" id="api-access">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div><h3 class="fs-6 mb-1">API access</h3><p class="mb-0 small text-body-secondary">Personal access tokens for integrations and mobile apps.</p></div>
+            <a href="{{ route('account.api-tokens') }}" class="btn btn-outline-primary">Manage API tokens</a>
+        </div>
+    </div>
 @stop

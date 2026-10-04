@@ -2,6 +2,7 @@
 
 use App\Features\Account\AccountServiceProvider;
 use App\Features\Analytics\AnalyticsServiceProvider;
+use App\Features\Api\ApiServiceProvider;
 use App\Features\Attendance\AttendanceServiceProvider;
 use App\Features\AuditLog\AuditLogServiceProvider;
 use App\Features\Auth\AuthServiceProvider;
@@ -24,6 +25,7 @@ return [
     // Feature slices
     AccountServiceProvider::class,
     AnalyticsServiceProvider::class,
+    ApiServiceProvider::class,
     AttendanceServiceProvider::class,
     AuditLogServiceProvider::class,
     AuthServiceProvider::class,

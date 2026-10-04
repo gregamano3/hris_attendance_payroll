@@ -47,6 +47,15 @@ return [
         'applicant_retention_months' => (int) env('PRIVACY_APPLICANT_RETENTION_MONTHS', 12),
     ],
 
+    /*
+    | REST API (Sanctum personal access tokens). See docs/api.md.
+    */
+    'api' => [
+        'enabled' => (bool) env('API_ENABLED', true),
+        'rate_limit_per_minute' => (int) env('API_RATE_LIMIT', 60),
+        'max_token_days' => (int) env('API_MAX_TOKEN_DAYS', 365),
+    ],
+
     'security' => [
         // Key for the blind indexes of encrypted columns (government IDs).
         // Generate with: php -r "echo bin2hex(random_bytes(32));"

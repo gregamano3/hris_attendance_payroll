@@ -8,9 +8,10 @@ enum TimeLogSource: string
     case Manual = 'manual';
     case Import = 'import';
     case Device = 'device';
+    case Api = 'api';
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        return $this === self::Api ? 'API' : ucfirst($this->value);
     }
 }
