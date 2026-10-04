@@ -31,6 +31,9 @@ enum Permission: string
 
     case SettingsManage = 'settings.manage';
 
+    case RecruitmentManage = 'recruitment.manage';
+    case PerformanceManage = 'performance.manage';
+
     /**
      * @return list<string>
      */

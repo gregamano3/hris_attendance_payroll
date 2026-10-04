@@ -9,6 +9,7 @@ use App\Features\Employees\EmployeesServiceProvider;
 use App\Features\Health\HealthServiceProvider;
 use App\Features\Payroll\PayrollServiceProvider;
 use App\Features\Privacy\PrivacyServiceProvider;
+use App\Features\Recruitment\RecruitmentServiceProvider;
 use App\Features\Security\SecurityServiceProvider;
 use App\Features\Users\UsersServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -28,6 +29,7 @@ return [
     HealthServiceProvider::class,
     PayrollServiceProvider::class,
     PrivacyServiceProvider::class,
+    RecruitmentServiceProvider::class,
     SecurityServiceProvider::class,
     UsersServiceProvider::class,
 ];

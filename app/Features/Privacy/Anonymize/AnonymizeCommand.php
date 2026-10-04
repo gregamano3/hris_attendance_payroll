@@ -2,6 +2,8 @@
 
 namespace App\Features\Privacy\Anonymize;
 
+use App\Features\Recruitment\Enums\ApplicantStage;
+use App\Features\Recruitment\Models\Applicant;
 use Illuminate\Console\Command;
 
 class AnonymizeCommand extends Command
@@ -12,6 +14,8 @@ class AnonymizeCommand extends Command
 
     public function handle(AnonymizeEmployees $anonymizer): int
     {
+        $this->purgeRejectedApplicants();
+
         $years = (int) ($this->option('years') ?: config('hris.privacy.retention_years'));
         $due = $anonymizer->due($years);
 
@@ -33,5 +37,21 @@ class AnonymizeCommand extends Command
         $this->info("Anonymized {$due->count()} employee(s).");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Rejected applicants (and their résumés) are deleted after the applicant retention period.
+     */
+    private function purgeRejectedApplicants(): void
+    {
+        $months = (int) config('hris.privacy.applicant_retention_months');
+        $query = Applicant::query()->where('stage', ApplicantStage::Rejected)->where('stage_changed_at', '<', now()->subMonths($months));
+        $count = $query->count();
+
+        if (! $this->option('dry-run')) {
+            $query->get()->each->delete();
+        }
+
+        $this->info(($this->option('dry-run') ? 'Would delete' : 'Deleted')." {$count} rejected applicant(s) older than {$months} month(s).");
     }
 }
