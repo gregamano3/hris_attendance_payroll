@@ -17,6 +17,10 @@ return [
         'password' => env('ADMIN_PASSWORD', 'password'),
     ],
 
+    // Login POSTs allowed per minute and IP address (failed attempts are
+    // additionally limited to 5 per account).
+    'login_throttle_per_minute' => (int) (env('LOGIN_THROTTLE') ?: 10),
+
     /*
     |--------------------------------------------------------------------------
     | Attendance rules

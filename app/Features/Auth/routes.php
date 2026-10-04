@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 // URLs follow the conventions expected by the AdminLTE auth views.
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');
-    Route::post('login', [LoginController::class, 'store'])->middleware('throttle:10,1');
+    Route::post('login', [LoginController::class, 'store'])->middleware('throttle:'.config('hris.login_throttle_per_minute').',1');
 
     Route::get('password/reset', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('password/email', [ForgotPasswordController::class, 'store'])

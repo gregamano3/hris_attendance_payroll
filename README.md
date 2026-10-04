@@ -102,6 +102,17 @@ BIR issuances.
 | `mailpit`   | Local mail catcher |
 | `node`      | Vite dev server (`docker compose --profile dev up node`) |
 
+## Testing
+
+```bash
+make check   # Pint + Larastan + Pest (unit and feature tests against PostgreSQL)
+make e2e     # Playwright end-to-end tests
+```
+
+`make e2e` starts a separate Docker Compose project (`hris-e2e`, http://localhost:8090) with its own database
+volume, reseeds it and runs the suite in `e2e/`, so your development data is never touched. Stop it with
+`make e2e-down`. The same suite runs in GitHub Actions (`.github/workflows/e2e.yml`), which uploads an HTML report.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Please read our [Code of Conduct](CODE_OF_CONDUCT.md)
