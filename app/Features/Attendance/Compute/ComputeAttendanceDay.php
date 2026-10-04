@@ -2,6 +2,8 @@
 
 namespace App\Features\Attendance\Compute;
 
+use App\Features\Attendance\Enums\AttendanceStatus;
+use App\Features\Attendance\Enums\HolidayType;
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Enums\TimeLogType;
 use App\Features\Attendance\Models\AttendanceDay;
@@ -10,6 +12,7 @@ use App\Features\Attendance\Models\OvertimeRequest;
 use App\Features\Attendance\Models\TimeLog;
 use App\Features\Attendance\Queries\HolidayCalendar;
 use App\Features\Attendance\Queries\ShiftResolver;
+use App\Features\Employees\Models\Employee;
 use Illuminate\Support\Carbon;
 
 /**
@@ -23,7 +26,7 @@ class ComputeAttendanceDay
         private HolidayCalendar $holidays,
     ) {}
 
-    public function handle(int $employeeId, Carbon $date): AttendanceDay
+    public function handle(int $employeeId, Carbon $date, bool $lookAhead = true): AttendanceDay
     {
         $date = $date->copy()->startOfDay();
         $shift = $this->shifts->forEmployee($employeeId, $date);
@@ -63,10 +66,67 @@ class ComputeAttendanceDay
             halfDayLeave: $leave !== null && $leave->day_part !== 'full' ? $leave->day_part : null,
         ));
 
-        return AttendanceDay::query()->updateOrCreate(
+        $isUnworkedRegularHoliday = $result->status === AttendanceStatus::Holiday
+            && $result->holiday === HolidayType::Regular
+            && ! $result->isRestDay;
+
+        $day = AttendanceDay::query()->updateOrCreate(
             ['employee_id' => $employeeId, 'date' => $date->toDateString()],
-            [...$result->toAttributes(), 'shift_id' => $shift->id],
+            [
+                ...$result->toAttributes(),
+                'shift_id' => $shift->id,
+                'holiday_pay_eligible' => $isUnworkedRegularHoliday ? $this->holidayPayEligible($employeeId, $date) : null,
+            ],
         );
+
+        // A change on a work day can affect the eligibility of the holidays right after it.
+        if ($lookAhead && ! in_array($result->status, [AttendanceStatus::Holiday, AttendanceStatus::RestDay], true)) {
+            $this->refreshFollowingHolidays($employeeId, $date);
+        }
+
+        return $day;
+    }
+
+    private function holidayPayEligible(int $employeeId, Carbon $holiday): bool
+    {
+        if (! config('hris.payroll.holiday_eligibility', true)) {
+            return true;
+        }
+
+        $hiredAt = Employee::withTrashed()->whereKey($employeeId)->value('hired_at');
+
+        for ($date = $holiday->copy()->subDay(), $i = 0; $i < 14; $date->subDay(), $i++) {
+            if ($hiredAt !== null && $date->lt(Carbon::parse($hiredAt))) {
+                return true; // no work day before the holiday since hire
+            }
+
+            if (! $this->shifts->forEmployee($employeeId, $date)->isWorkDay($date) || $this->holidays->typeOn($date) !== null) {
+                continue;
+            }
+
+            $previous = AttendanceDay::query()->with('leaveRequest.leaveType')
+                ->where('employee_id', $employeeId)->whereDate('date', $date)->first()
+                ?? $this->handle($employeeId, $date, lookAhead: false)->load('leaveRequest.leaveType');
+
+            return HolidayPayRule::isEligible($previous->status, (bool) $previous->leaveRequest?->leaveType->is_paid);
+        }
+
+        return true;
+    }
+
+    private function refreshFollowingHolidays(int $employeeId, Carbon $date): void
+    {
+        for ($next = $date->copy()->addDay(), $i = 0; $i < 7; $next->addDay(), $i++) {
+            $isHoliday = $this->holidays->typeOn($next) !== null;
+
+            if (! $isHoliday && $this->shifts->forEmployee($employeeId, $next)->isWorkDay($next)) {
+                return; // reached the next work day
+            }
+
+            if ($isHoliday && AttendanceDay::query()->where('employee_id', $employeeId)->whereDate('date', $next)->exists()) {
+                $this->handle($employeeId, $next, lookAhead: false);
+            }
+        }
     }
 
     /**

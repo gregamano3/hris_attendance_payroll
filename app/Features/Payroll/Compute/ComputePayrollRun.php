@@ -117,6 +117,7 @@ class ComputePayrollRun
             nightDiffMinutes: $day->night_diff_minutes,
             paidLeave: (bool) $day->leaveRequest?->leaveType->is_paid,
             leaveFraction: (float) $day->leave_fraction,
+            holidayPayEligible: $day->holiday_pay_eligible ?? true,
         );
     }
 

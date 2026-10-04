@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property int $night_diff_minutes
  * @property bool $is_rest_day
  * @property HolidayType|null $holiday_type
+ * @property bool|null $holiday_pay_eligible
  * @property int|null $leave_request_id
  * @property string $leave_fraction
  * @property-read Shift|null $shift
@@ -36,7 +37,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'employee_id', 'date', 'shift_id', 'status', 'time_in', 'time_out', 'worked_minutes', 'late_minutes',
-    'undertime_minutes', 'overtime_minutes', 'night_diff_minutes', 'is_rest_day', 'holiday_type', 'leave_request_id', 'leave_fraction',
+    'undertime_minutes', 'overtime_minutes', 'night_diff_minutes', 'is_rest_day', 'holiday_type', 'holiday_pay_eligible', 'leave_request_id', 'leave_fraction',
 ])]
 class AttendanceDay extends Model
 {
@@ -52,6 +53,7 @@ class AttendanceDay extends Model
             'status' => AttendanceStatus::class,
             'holiday_type' => HolidayType::class,
             'is_rest_day' => 'boolean',
+            'holiday_pay_eligible' => 'boolean',
         ];
     }
 

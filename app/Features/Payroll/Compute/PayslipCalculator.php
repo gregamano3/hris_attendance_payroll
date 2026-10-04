@@ -116,7 +116,13 @@ class PayslipCalculator
                     $stats['holiday_days']++;
 
                     if ($day->holiday === 'regular' && ! $day->isRestDay) {
-                        $holidayPayDays++;
+                        if ($day->holidayPayEligible) {
+                            $holidayPayDays++;
+                        } else {
+                            // Not entitled: unpaid (monthly salaries are reduced by a day).
+                            $stats['holidays_unpaid'] = ($stats['holidays_unpaid'] ?? 0) + 1;
+                            $unpaidDays++;
+                        }
                     }
                     break;
 
@@ -256,6 +262,10 @@ class PayslipCalculator
 
         $deductions = $this->sum($lines, PayslipLine::DEDUCTION);
         $net = $gross->minus($deductions);
+
+        if (($stats['holidays_unpaid'] ?? 0) > 0) {
+            $warnings[] = "{$stats['holidays_unpaid']} regular holiday(s) unpaid: absent on the preceding work day.";
+        }
 
         if ($stats['days_incomplete'] > 0) {
             $warnings[] = "{$stats['days_incomplete']} day(s) with incomplete punches were treated as unpaid.";
