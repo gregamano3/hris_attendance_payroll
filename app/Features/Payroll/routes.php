@@ -5,6 +5,7 @@ use App\Features\Payroll\ExportBankFile\ExportBankFileController;
 use App\Features\Payroll\ExportRegister\ExportRegisterController;
 use App\Features\Payroll\ListPayrollRuns\ListPayrollRunsController;
 use App\Features\Payroll\ManageAdjustments\AdjustmentsController;
+use App\Features\Payroll\ManageFinalPay\FinalPayController;
 use App\Features\Payroll\ManageLoans\LoansController;
 use App\Features\Payroll\ManageRecurringEarnings\RecurringEarningsController;
 use App\Features\Payroll\ManageStatutoryRates\StatutoryRatesController;
@@ -36,7 +37,17 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::delete('allowances/{recurringEarning}', [RecurringEarningsController::class, 'destroy'])->name('allowances.destroy');
         Route::post('loans', [LoansController::class, 'store'])->name('loans.store');
         Route::patch('loans/{loan}/cancel', [LoansController::class, 'cancel'])->name('loans.cancel');
+
+        Route::post('final-pay', [FinalPayController::class, 'store'])->name('final-pay.store');
+        Route::post('final-pay/{finalPay}/compute', [FinalPayController::class, 'compute'])->name('final-pay.compute');
+        Route::delete('final-pay/{finalPay}', [FinalPayController::class, 'destroy'])->name('final-pay.destroy');
+        Route::post('final-pay/{finalPay}/adjustments', [FinalPayController::class, 'storeAdjustment'])->name('final-pay.adjustments.store');
+        Route::delete('final-pay/{finalPay}/adjustments/{adjustment}', [FinalPayController::class, 'destroyAdjustment'])->name('final-pay.adjustments.destroy');
     });
+
+    Route::post('final-pay/{finalPay}/finalize', [FinalPayController::class, 'finalize'])
+        ->middleware('can:payroll.finalize')
+        ->name('final-pay.finalize');
 
     Route::post('runs/{run}/finalize', [ProcessPayrollRunController::class, 'finalize'])
         ->middleware('can:payroll.finalize')
@@ -50,6 +61,9 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('allowances', [RecurringEarningsController::class, 'index'])->name('allowances.index');
         Route::get('loans', [LoansController::class, 'index'])->name('loans.index');
         Route::get('loans/{loan}', [LoansController::class, 'show'])->name('loans.show');
+        Route::get('final-pay', [FinalPayController::class, 'index'])->name('final-pay.index');
+        Route::get('final-pay/{finalPay}', [FinalPayController::class, 'show'])->name('final-pay.show');
+        Route::get('final-pay/{finalPay}/pdf', [FinalPayController::class, 'pdf'])->name('final-pay.pdf');
         Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
         Route::get('reports/alphalist.csv', [ReportsController::class, 'alphalist'])->name('reports.alphalist');
         Route::get('reports/{agency}.csv', [ReportsController::class, 'contributions'])->name('reports.contributions');

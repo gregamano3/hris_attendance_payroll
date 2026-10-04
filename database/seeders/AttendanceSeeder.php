@@ -78,7 +78,10 @@ class AttendanceSeeder extends Seeder
         ]);
 
         foreach (self::LEAVE_TYPES as [$code, $name, $paid, $days]) {
-            LeaveType::query()->firstOrCreate(['code' => $code], ['name' => $name, 'is_paid' => $paid, 'days_per_year' => $days]);
+            LeaveType::query()->firstOrCreate(['code' => $code], [
+                'name' => $name, 'is_paid' => $paid, 'days_per_year' => $days,
+                'is_convertible' => in_array($code, ['VL', 'SIL'], true), // unused credits paid out on separation
+            ]);
         }
 
         foreach (self::HOLIDAYS_2026 as [$date, $name, $type]) {

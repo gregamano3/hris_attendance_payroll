@@ -25,7 +25,7 @@
                         <tbody>
                             @forelse ($loan->payments as $payment)
                                 <tr>
-                                    <td><a href="{{ route('payroll.runs.show', $payment->run) }}">{{ $payment->run->name }}</a></td>
+                                    <td>@if ($payment->run)<a href="{{ route('payroll.runs.show', $payment->run) }}">{{ $payment->run->name }}</a>@else Final pay @endif</td>
                                     <td class="text-end">{{ $payment->amount->format(false) }}</td>
                                     <td class="text-end">{{ $payment->balance_after->format(false) }}</td>
                                 </tr>

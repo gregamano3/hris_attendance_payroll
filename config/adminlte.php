@@ -908,6 +908,13 @@ return [
             'active' => ['payroll/loans*'],
         ],
         [
+            'text' => 'Final pay',
+            'route' => 'payroll.final-pay.index',
+            'icon' => 'bi bi-box-arrow-right',
+            'can' => 'payroll.view',
+            'active' => ['payroll/final-pay*'],
+        ],
+        [
             'text' => 'Government reports',
             'route' => 'payroll.reports.index',
             'icon' => 'bi bi-file-earmark-spreadsheet',
