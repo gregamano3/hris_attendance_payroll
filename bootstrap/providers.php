@@ -1,6 +1,7 @@
 <?php
 
 use App\Features\Account\AccountServiceProvider;
+use App\Features\Analytics\AnalyticsServiceProvider;
 use App\Features\Attendance\AttendanceServiceProvider;
 use App\Features\AuditLog\AuditLogServiceProvider;
 use App\Features\Auth\AuthServiceProvider;
@@ -22,6 +23,7 @@ return [
 
     // Feature slices
     AccountServiceProvider::class,
+    AnalyticsServiceProvider::class,
     AttendanceServiceProvider::class,
     AuditLogServiceProvider::class,
     AuthServiceProvider::class,

@@ -24,6 +24,8 @@
                 {{ $period->label() }}
                 <a href="{{ route('attendance.dtr.pdf', ['employee' => $employee, 'from' => $period->from->toDateString(), 'to' => $period->to->toDateString()]) }}"
                     class="btn btn-sm btn-outline-secondary ms-2"><i class="bi bi-printer me-1"></i> Print DTR</a>
+                <a href="{{ route('attendance.dtr.xlsx', ['employee' => $employee, 'from' => $period->from->toDateString(), 'to' => $period->to->toDateString()]) }}"
+                    class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-excel me-1"></i> Excel</a>
             </span>
         </div>
         @include('attendance::_dtr-table')

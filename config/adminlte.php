@@ -790,6 +790,12 @@ return [
             'can' => 'dashboard.view',
         ],
         [
+            'text' => 'HR analytics',
+            'route' => 'analytics',
+            'icon' => 'bi bi-bar-chart-line',
+            'can' => 'employees.view',
+        ],
+        [
             'text' => 'My profile',
             'route' => 'my-profile',
             'icon' => 'bi bi-person-badge',

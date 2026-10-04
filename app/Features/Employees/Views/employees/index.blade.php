@@ -3,6 +3,7 @@
 @section('title', 'Employees')
 
 @section('page_actions')
+    <a href="{{ route('employees.export', request()->query()) }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-excel me-1"></i> Excel</a>
     @can('employees.manage')
         <a href="{{ route('employees.import.create') }}" class="btn btn-outline-primary"><i class="bi bi-upload me-1"></i> Import</a>
         <a href="{{ route('employees.create') }}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> New employee</a>
