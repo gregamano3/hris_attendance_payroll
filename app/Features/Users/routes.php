@@ -11,4 +11,5 @@ Route::middleware(['auth', 'can:users.manage'])->prefix('users')->name('users.')
     Route::post('/', [CreateUserController::class, 'store'])->name('store');
     Route::get('{user}/edit', [UpdateUserController::class, 'edit'])->name('edit');
     Route::put('{user}', [UpdateUserController::class, 'update'])->name('update');
+    Route::delete('{user}/sso', [UpdateUserController::class, 'unlinkSso'])->name('sso.unlink');
 });

@@ -56,6 +56,26 @@ return [
         'max_token_days' => (int) env('API_MAX_TOKEN_DAYS', 365),
     ],
 
+    /*
+    | Single sign-on with OpenID Connect (Google Workspace, Microsoft Entra ID,
+    | Keycloak, Okta, Authentik...). Redirect URI: {APP_URL}/auth/sso/callback.
+    | See docs/sso.md.
+    */
+    'sso' => [
+        'enabled' => (bool) env('OIDC_ENABLED', false),
+        'label' => env('OIDC_LABEL', 'Sign in with SSO'),
+        'issuer' => env('OIDC_ISSUER'),
+        'client_id' => env('OIDC_CLIENT_ID'),
+        'client_secret' => env('OIDC_CLIENT_SECRET'),
+        'scopes' => env('OIDC_SCOPES', 'openid email profile'),
+        // Link by email only when the provider marks it verified (email_verified claim).
+        'require_verified_email' => (bool) env('OIDC_REQUIRE_VERIFIED_EMAIL', true),
+        'allowed_domains' => array_values(array_filter(array_map(fn ($d) => strtolower(trim($d)), explode(',', (string) env('OIDC_ALLOWED_DOMAINS', ''))))),
+        // Create unknown users on first login (off: an admin must create the account first).
+        'auto_provision' => (bool) env('OIDC_AUTO_PROVISION', false),
+        'default_role' => env('OIDC_DEFAULT_ROLE', 'employee'),
+    ],
+
     'security' => [
         // Key for the blind indexes of encrypted columns (government IDs).
         // Generate with: php -r "echo bin2hex(random_bytes(32));"

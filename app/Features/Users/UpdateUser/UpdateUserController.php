@@ -30,4 +30,11 @@ class UpdateUserController
 
         return redirect()->route('users.index')->with('success', "User {$user->name} updated.");
     }
+
+    public function unlinkSso(User $user): RedirectResponse
+    {
+        $user->forceFill(['oidc_subject' => null])->save();
+
+        return back()->with('success', 'Single sign-on identity unlinked.');
+    }
 }
