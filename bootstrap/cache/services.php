@@ -37,8 +37,9 @@
     33 => 'App\\Providers\\AppServiceProvider',
     34 => 'App\\Features\\Auth\\AuthServiceProvider',
     35 => 'App\\Features\\Dashboard\\DashboardServiceProvider',
-    36 => 'App\\Features\\Health\\HealthServiceProvider',
-    37 => 'App\\Features\\Users\\UsersServiceProvider',
+    36 => 'App\\Features\\Employees\\EmployeesServiceProvider',
+    37 => 'App\\Features\\Health\\HealthServiceProvider',
+    38 => 'App\\Features\\Users\\UsersServiceProvider',
   ),
   'eager' => 
   array (
@@ -63,8 +64,9 @@
     18 => 'App\\Providers\\AppServiceProvider',
     19 => 'App\\Features\\Auth\\AuthServiceProvider',
     20 => 'App\\Features\\Dashboard\\DashboardServiceProvider',
-    21 => 'App\\Features\\Health\\HealthServiceProvider',
-    22 => 'App\\Features\\Users\\UsersServiceProvider',
+    21 => 'App\\Features\\Employees\\EmployeesServiceProvider',
+    22 => 'App\\Features\\Health\\HealthServiceProvider',
+    23 => 'App\\Features\\Users\\UsersServiceProvider',
   ),
   'deferred' => 
   array (

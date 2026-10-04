@@ -41,6 +41,9 @@ make setup
 Sign in with the seeded administrator **admin@example.com / password**
 (configurable through `ADMIN_EMAIL` / `ADMIN_PASSWORD`) and change the password immediately.
 
+Outside production the seeder also creates a demo organisation with one account per role
+(`hr@example.com`, `payroll@example.com`, `employee@example.com`, all with password `password`).
+
 Run `make help` to see all commands.
 
 ## Roles

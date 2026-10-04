@@ -22,5 +22,9 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin->syncRoles([Role::Admin->value]);
+
+        if (! app()->isProduction()) {
+            $this->call(DemoSeeder::class);
+        }
     }
 }
