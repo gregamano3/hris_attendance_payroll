@@ -4,6 +4,8 @@ namespace App\Features\Attendance\ReviewLeaves;
 
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Models\LeaveRequest;
+use App\Features\Attendance\Notifications\RequestReviewed;
+use App\Shared\Notifications\Recipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -47,6 +49,8 @@ class ReviewLeavesController
             'reviewed_by' => $request->user()?->id,
             'reviewed_at' => now(),
         ]);
+
+        Recipients::active($leaveRequest->employee->user)?->notify(new RequestReviewed($leaveRequest));
 
         return back()->with('success', "Leave request {$leaveRequest->status->label()}.");
     }

@@ -7,6 +7,8 @@ use App\Features\Payroll\Compute\ComputePayrollRun;
 use App\Features\Payroll\Compute\ComputeThirteenthMonthRun;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Models\PayrollRun;
+use App\Features\Payroll\Notifications\PayslipReleased;
+use App\Shared\Notifications\Recipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +51,10 @@ class ProcessPayrollRunController
 
             $loans->handle($run);
         });
+
+        foreach ($run->payslips()->with('employee.user')->get() as $payslip) {
+            Recipients::active($payslip->employee->user)?->notify(new PayslipReleased($payslip));
+        }
 
         return back()->with('success', 'Payroll finalized. Payslips are now visible to employees.');
     }
