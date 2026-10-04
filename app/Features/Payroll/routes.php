@@ -4,6 +4,8 @@ use App\Features\Payroll\CreatePayrollRun\CreatePayrollRunController;
 use App\Features\Payroll\ExportRegister\ExportRegisterController;
 use App\Features\Payroll\ListPayrollRuns\ListPayrollRunsController;
 use App\Features\Payroll\ManageAdjustments\AdjustmentsController;
+use App\Features\Payroll\ManageLoans\LoansController;
+use App\Features\Payroll\ManageRecurringEarnings\RecurringEarningsController;
 use App\Features\Payroll\ManageStatutoryRates\StatutoryRatesController;
 use App\Features\Payroll\ProcessPayrollRun\ProcessPayrollRunController;
 use App\Features\Payroll\ShowMyPayslips\ShowMyPayslipsController;
@@ -25,6 +27,12 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::delete('runs/{run}', [ProcessPayrollRunController::class, 'destroy'])->name('runs.destroy');
         Route::post('runs/{run}/adjustments', [AdjustmentsController::class, 'store'])->name('runs.adjustments.store');
         Route::delete('runs/{run}/adjustments/{adjustment}', [AdjustmentsController::class, 'destroy'])->name('runs.adjustments.destroy');
+
+        Route::post('allowances', [RecurringEarningsController::class, 'store'])->name('allowances.store');
+        Route::patch('allowances/{recurringEarning}', [RecurringEarningsController::class, 'update'])->name('allowances.update');
+        Route::delete('allowances/{recurringEarning}', [RecurringEarningsController::class, 'destroy'])->name('allowances.destroy');
+        Route::post('loans', [LoansController::class, 'store'])->name('loans.store');
+        Route::patch('loans/{loan}/cancel', [LoansController::class, 'cancel'])->name('loans.cancel');
     });
 
     Route::post('runs/{run}/finalize', [ProcessPayrollRunController::class, 'finalize'])
@@ -35,6 +43,9 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('runs', ListPayrollRunsController::class)->name('runs.index');
         Route::get('runs/{run}', ShowPayrollRunController::class)->name('runs.show');
         Route::get('runs/{run}/register.csv', ExportRegisterController::class)->name('runs.register');
+        Route::get('allowances', [RecurringEarningsController::class, 'index'])->name('allowances.index');
+        Route::get('loans', [LoansController::class, 'index'])->name('loans.index');
+        Route::get('loans/{loan}', [LoansController::class, 'show'])->name('loans.show');
     });
 
     Route::middleware('can:settings.manage')->group(function () {

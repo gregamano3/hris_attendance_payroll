@@ -2,12 +2,14 @@
 
 namespace App\Features\Payroll\ProcessPayrollRun;
 
+use App\Features\Payroll\Compute\ApplyLoanPayments;
 use App\Features\Payroll\Compute\ComputePayrollRun;
 use App\Features\Payroll\Compute\ComputeThirteenthMonthRun;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Models\PayrollRun;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -32,17 +34,21 @@ class ProcessPayrollRunController
         return back()->with('success', "Computed {$run->employee_count} payslip(s).");
     }
 
-    public function finalize(Request $request, PayrollRun $run): RedirectResponse
+    public function finalize(Request $request, PayrollRun $run, ApplyLoanPayments $loans): RedirectResponse
     {
         if ($run->status !== PayrollRunStatus::Computed) {
             return back()->with('error', 'Only computed runs with up-to-date payslips can be finalized.');
         }
 
-        $run->update([
-            'status' => PayrollRunStatus::Finalized,
-            'finalized_by' => $request->user()?->id,
-            'finalized_at' => now(),
-        ]);
+        DB::transaction(function () use ($request, $run, $loans) {
+            $run->update([
+                'status' => PayrollRunStatus::Finalized,
+                'finalized_by' => $request->user()?->id,
+                'finalized_at' => now(),
+            ]);
+
+            $loans->handle($run);
+        });
 
         return back()->with('success', 'Payroll finalized. Payslips are now visible to employees.');
     }

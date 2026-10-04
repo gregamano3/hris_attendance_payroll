@@ -6,10 +6,13 @@ use App\Features\Attendance\Models\AttendanceDay;
 use App\Features\Attendance\Queries\AttendanceSummary;
 use App\Features\Employees\Enums\RateType;
 use App\Features\Employees\Models\Employee;
+use App\Features\Payroll\Enums\LoanStatus;
 use App\Features\Payroll\Enums\PayrollRunStatus;
+use App\Features\Payroll\Models\Loan;
 use App\Features\Payroll\Models\PayrollAdjustment;
 use App\Features\Payroll\Models\PayrollRun;
 use App\Features\Payroll\Models\Payslip;
+use App\Features\Payroll\Models\RecurringEarning;
 use App\Features\Payroll\Queries\StatutoryRates;
 use App\Shared\Money\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,10 +37,18 @@ class ComputePayrollRun
         $period = $run->period();
         $calculator = $this->rates->calculatorFor($period->to);
         $adjustments = $run->adjustments()->get()->groupBy('employee_id');
+        $recurring = RecurringEarning::query()->activeDuring($period)->get()->groupBy('employee_id');
+        $loans = Loan::query()
+            ->where('status', LoanStatus::Active)
+            ->whereDate('starts_on', '<=', $period->to)
+            ->where('balance', '>', 0)
+            ->orderBy('starts_on')
+            ->get()
+            ->groupBy('employee_id');
 
         $employees = $this->eligibleEmployees($run);
 
-        DB::transaction(function () use ($run, $period, $calculator, $adjustments, $employees) {
+        DB::transaction(function () use ($run, $period, $calculator, $adjustments, $recurring, $loans, $employees) {
             $run->payslips()->delete();
 
             foreach ($employees as $employee) {
@@ -49,7 +60,11 @@ class ComputePayrollRun
                     monthlyRated: $employee->rate_type === RateType::Monthly,
                     basicRate: $employee->basic_rate,
                     days: $days->map(fn (AttendanceDay $day) => $this->toDayData($day))->values()->all(),
-                    adjustments: $this->adjustmentsFor($adjustments->get($employee->id, collect())),
+                    adjustments: [
+                        ...$this->recurringFor($recurring->get($employee->id, collect())),
+                        ...$this->adjustmentsFor($adjustments->get($employee->id, collect())),
+                        ...$this->loansFor($loans->get($employee->id, collect())),
+                    ],
                     minimumWageEarner: $employee->is_minimum_wage_earner,
                 ));
 
@@ -115,6 +130,35 @@ class ComputePayrollRun
             'label' => $a->label,
             'amount' => $a->amount,
             'taxable' => $a->taxable,
+        ])->values()->all();
+    }
+
+    /**
+     * @param  Collection<int, RecurringEarning>  $earnings
+     * @return list<array{kind: string, label: string, amount: Money, taxable: bool}>
+     */
+    private function recurringFor(Collection $earnings): array
+    {
+        return $earnings->map(fn (RecurringEarning $e) => [
+            'kind' => PayslipLine::EARNING,
+            'label' => $e->label,
+            'amount' => $e->amount,
+            'taxable' => $e->tax_treatment->isTaxable(),
+        ])->values()->all();
+    }
+
+    /**
+     * @param  Collection<int, Loan>  $loans
+     * @return list<array{kind: string, label: string, amount: Money, taxable: bool, code: string}>
+     */
+    private function loansFor(Collection $loans): array
+    {
+        return $loans->map(fn (Loan $loan) => [
+            'kind' => PayslipLine::DEDUCTION,
+            'code' => $loan->lineCode(),
+            'label' => $loan->type->label().($loan->reference_no ? " ({$loan->reference_no})" : ''),
+            'amount' => $loan->nextDeduction(),
+            'taxable' => false,
         ])->values()->all();
     }
 

@@ -196,11 +196,11 @@ class PayslipCalculator
             $lines[] = $this->earning('NIGHT_DIFF', 'Night differential (10%)', $nightPay, round($nightTotal / 60, 2), 'hrs');
         }
 
-        // Manual adjustments
+        // Adjustments, recurring allowances and loan amortizations
         foreach ($input->adjustments as $adjustment) {
             $lines[] = $adjustment['kind'] === PayslipLine::EARNING
-                ? new PayslipLine(PayslipLine::EARNING, 'ALLOWANCE', $adjustment['label'], $adjustment['amount'], taxable: $adjustment['taxable'])
-                : new PayslipLine(PayslipLine::DEDUCTION, 'OTHER_DEDUCTION', $adjustment['label'], $adjustment['amount']);
+                ? new PayslipLine(PayslipLine::EARNING, $adjustment['code'] ?? 'ALLOWANCE', $adjustment['label'], $adjustment['amount'], taxable: $adjustment['taxable'])
+                : new PayslipLine(PayslipLine::DEDUCTION, $adjustment['code'] ?? 'OTHER_DEDUCTION', $adjustment['label'], $adjustment['amount']);
         }
 
         if ($input->minimumWageEarner) {
