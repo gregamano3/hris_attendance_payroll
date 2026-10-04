@@ -62,6 +62,7 @@ class EmployeeRequest extends FormRequest
             ],
             'rate_type' => ['required', Rule::enum(RateType::class)],
             'basic_rate' => ['required', 'numeric', 'gt:0', 'max:99999999'],
+            'is_minimum_wage_earner' => ['boolean'],
         ];
 
         foreach (GovernmentId::cases() as $id) {

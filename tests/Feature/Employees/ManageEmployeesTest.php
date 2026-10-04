@@ -144,3 +144,11 @@ it('tells users without an employee record to contact HR', function () {
 it('prefills the next employee number on the create form', function () {
     $this->actingAs(userWithRole(Role::Hr))->get('/employees/create')->assertOk()->assertSee('EMP-00001');
 });
+
+it('flags minimum wage earners', function () {
+    $this->actingAs(userWithRole(Role::Hr))
+        ->post('/employees', validEmployeePayload(['rate_type' => 'daily', 'basic_rate' => '695', 'is_minimum_wage_earner' => '1']))
+        ->assertSessionHasNoErrors();
+
+    expect(Employee::query()->where('employee_no', 'EMP-90001')->value('is_minimum_wage_earner'))->toBeTrue();
+});

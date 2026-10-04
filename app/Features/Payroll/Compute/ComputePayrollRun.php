@@ -50,6 +50,7 @@ class ComputePayrollRun
                     basicRate: $employee->basic_rate,
                     days: $days->map(fn (AttendanceDay $day) => $this->toDayData($day))->values()->all(),
                     adjustments: $this->adjustmentsFor($adjustments->get($employee->id, collect())),
+                    minimumWageEarner: $employee->is_minimum_wage_earner,
                 ));
 
                 $this->store($run, $employee, $result);
@@ -130,6 +131,7 @@ class ComputePayrollRun
             'basic_rate' => $employee->basic_rate,
             'daily_rate' => $result->dailyRate,
             'hourly_rate' => $result->hourlyRate,
+            'is_minimum_wage_earner' => $employee->is_minimum_wage_earner,
             'gross_pay' => $result->grossPay,
             'taxable_income' => $result->taxableIncome,
             'total_deductions' => $result->totalDeductions,

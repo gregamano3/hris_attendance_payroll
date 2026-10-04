@@ -150,3 +150,40 @@ it('treats incomplete punches as unpaid and warns about them', function () {
     expect($result->amountOf('ABSENCES')->toDecimal())->toBe('-1200.00')
         ->and($result->warnings)->toHaveCount(1);
 });
+
+it('exempts the statutory wages of minimum wage earners from tax', function () {
+    // ₱695/day, 8 regular days with 2h OT, 8h rest day work, plus a ₱5,000 taxable allowance.
+    $input = fn (bool $mwe) => new PayslipInput(
+        monthlyRated: false,
+        basicRate: Money::ofPesos(695),
+        days: [
+            ...array_map(fn ($d) => workday("2026-10-0{$d}", ot: $d === 1 ? 120 : 0), range(1, 8)),
+            new DayData('2026-10-10', DayData::PRESENT, isRestDay: true, workedMinutes: 480),
+        ],
+        adjustments: [['kind' => PayslipLine::EARNING, 'label' => 'Performance bonus', 'amount' => Money::ofPesos(10000), 'taxable' => true]],
+        minimumWageEarner: $mwe,
+    );
+
+    $regular = payslipCalculator()->compute($input(false));
+    $mwe = payslipCalculator()->compute($input(true));
+
+    // Gross is identical; only the tax treatment differs.
+    expect($mwe->grossPay->equals($regular->grossPay))->toBeTrue()
+        ->and($mwe->taxableIncome->toDecimal())->toBe('10000.00')      // only the bonus
+        ->and($mwe->amountOf('TAX')->toDecimal())->toBe('0.00')        // below the ₱10,417 threshold
+        ->and($regular->taxableIncome->isGreaterThan($mwe->taxableIncome))->toBeTrue()
+        ->and($regular->amountOf('TAX')->isGreaterThan(Money::zero()))->toBeTrue();
+});
+
+it('taxes other income of minimum wage earners above the threshold', function () {
+    $result = payslipCalculator()->compute(new PayslipInput(
+        monthlyRated: false,
+        basicRate: Money::ofPesos(695),
+        days: [workday('2026-10-01')],
+        adjustments: [['kind' => PayslipLine::EARNING, 'label' => 'Commission', 'amount' => Money::ofPesos(20000), 'taxable' => true]],
+        minimumWageEarner: true,
+    ));
+
+    expect($result->taxableIncome->toDecimal())->toBe('20000.00')
+        ->and($result->amountOf('TAX')->toDecimal())->toBe('1604.10'); // 937.50 + 20% × (20,000 − 16,667)
+});

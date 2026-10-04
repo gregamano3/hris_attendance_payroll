@@ -46,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $separated_at
  * @property RateType $rate_type
  * @property Money $basic_rate
+ * @property bool $is_minimum_wage_earner
  * @property string|null $sss_no
  * @property string|null $philhealth_no
  * @property string|null $pagibig_no
@@ -58,7 +59,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'employee_no', 'user_id', 'first_name', 'middle_name', 'last_name', 'suffix', 'birth_date', 'gender',
     'civil_status', 'email', 'mobile', 'address', 'department_id', 'position_id', 'employment_type', 'status',
-    'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'basic_rate', 'sss_no', 'philhealth_no',
+    'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'basic_rate', 'is_minimum_wage_earner', 'sss_no', 'philhealth_no',
     'pagibig_no', 'tin',
 ])]
 #[UseFactory(EmployeeFactory::class)]
@@ -83,6 +84,7 @@ class Employee extends Model
             'status' => EmploymentStatus::class,
             'rate_type' => RateType::class,
             'basic_rate' => MoneyCast::class,
+            'is_minimum_wage_earner' => 'boolean',
         ];
     }
 

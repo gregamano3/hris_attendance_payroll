@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Money $basic_rate
  * @property Money $daily_rate
  * @property Money $hourly_rate
+ * @property bool $is_minimum_wage_earner
  * @property Money $gross_pay
  * @property Money $taxable_income
  * @property Money $total_deductions
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable([
     'payroll_run_id', 'employee_id', 'employee_no', 'employee_name', 'department', 'position', 'rate_type',
-    'basic_rate', 'daily_rate', 'hourly_rate', 'gross_pay', 'taxable_income', 'total_deductions', 'net_pay',
+    'basic_rate', 'daily_rate', 'hourly_rate', 'is_minimum_wage_earner', 'gross_pay', 'taxable_income', 'total_deductions', 'net_pay',
     'employer_contributions', 'attendance', 'warnings',
 ])]
 class Payslip extends Model
@@ -55,6 +56,7 @@ class Payslip extends Model
             'total_deductions' => MoneyCast::class,
             'net_pay' => MoneyCast::class,
             'employer_contributions' => MoneyCast::class,
+            'is_minimum_wage_earner' => 'boolean',
             'attendance' => 'array',
             'warnings' => 'array',
         ];
