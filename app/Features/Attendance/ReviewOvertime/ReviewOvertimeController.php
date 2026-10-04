@@ -5,6 +5,8 @@ namespace App\Features\Attendance\ReviewOvertime;
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Models\AttendanceDay;
 use App\Features\Attendance\Models\OvertimeRequest;
+use App\Features\Attendance\Notifications\RequestReviewed;
+use App\Shared\Notifications\Recipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -56,6 +58,8 @@ class ReviewOvertimeController
             'reviewed_by' => $request->user()?->id,
             'reviewed_at' => now(),
         ]);
+
+        Recipients::active($overtimeRequest->employee->user)?->notify(new RequestReviewed($overtimeRequest));
 
         return back()->with('success', "Overtime request {$overtimeRequest->status->label()}.");
     }

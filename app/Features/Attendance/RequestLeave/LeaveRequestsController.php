@@ -5,12 +5,16 @@ namespace App\Features\Attendance\RequestLeave;
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Models\LeaveRequest;
 use App\Features\Attendance\Models\LeaveType;
+use App\Features\Attendance\Notifications\RequestSubmitted;
 use App\Features\Attendance\Queries\LeaveBalances;
 use App\Features\Employees\Models\Employee;
 use App\Features\Employees\Queries\EmployeeDirectory;
+use App\Shared\Authorization\Permission;
+use App\Shared\Notifications\Recipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -82,12 +86,14 @@ class LeaveRequestsController
             ]);
         }
 
-        LeaveRequest::query()->create([
+        $leave = LeaveRequest::query()->create([
             ...$data,
             'employee_id' => $employee->id,
             'days' => $days,
             'status' => LeaveStatus::Pending,
         ]);
+
+        Notification::send(Recipients::withPermission(Permission::LeavesApprove, $request->user()?->id), new RequestSubmitted($leave));
 
         return back()->with('success', "Leave request for {$days} day(s) submitted.");
     }

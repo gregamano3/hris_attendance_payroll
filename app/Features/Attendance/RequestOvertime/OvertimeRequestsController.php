@@ -4,10 +4,14 @@ namespace App\Features\Attendance\RequestOvertime;
 
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Models\OvertimeRequest;
+use App\Features\Attendance\Notifications\RequestSubmitted;
 use App\Features\Employees\Models\Employee;
 use App\Features\Employees\Queries\EmployeeDirectory;
+use App\Shared\Authorization\Permission;
+use App\Shared\Notifications\Recipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class OvertimeRequestsController
@@ -46,13 +50,15 @@ class OvertimeRequestsController
             return back()->withInput()->withErrors(['date' => 'You already have a pending overtime request for this date.']);
         }
 
-        OvertimeRequest::query()->create([
+        $overtime = OvertimeRequest::query()->create([
             'employee_id' => $employee->id,
             'date' => $data['date'],
             'minutes' => (int) round((float) $data['hours'] * 60),
             'reason' => $data['reason'],
             'status' => LeaveStatus::Pending,
         ]);
+
+        Notification::send(Recipients::withPermission(Permission::OvertimeApprove, $request->user()?->id), new RequestSubmitted($overtime));
 
         return back()->with('success', 'Overtime request submitted.');
     }
