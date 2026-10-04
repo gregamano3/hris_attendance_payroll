@@ -3,7 +3,7 @@
 ############################
 # Base: PHP-FPM + extensions
 ############################
-FROM php:8.4-fpm-alpine AS base
+FROM php:8.5-fpm-alpine AS base
 
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_HOME=/tmp/composer
@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
         icu-dev libpq-dev libzip-dev libpng-dev freetype-dev libjpeg-turbo-dev linux-headers \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" bcmath gd intl opcache pcntl pdo_pgsql zip \
+    && docker-php-ext-install -j"$(nproc)" bcmath gd intl pcntl pdo_pgsql zip \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && apk del .build-deps
