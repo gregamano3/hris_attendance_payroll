@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(RolesAndPermissionsSeeder::class);
+        $this->call([RolesAndPermissionsSeeder::class, AttendanceSeeder::class]);
 
         $admin = User::query()->firstOrCreate(
             ['email' => config('hris.admin.email')],

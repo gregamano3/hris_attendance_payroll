@@ -27,6 +27,50 @@
         <div class="col-lg-3 col-6">
             <?php if (isset($component)) { $__componentOriginal28a68399664384fcdb4ffafd23cbfe61 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal28a68399664384fcdb4ffafd23cbfe61 = $attributes; } ?>
+<?php $component = JeroenNoten\LaravelAdminLte\View\Components\Widget\SmallBox::resolve(['title' => ''.e(number_format($stats['clocked_in_today'])).'','text' => 'Clocked in today','icon' => 'bi bi-fingerprint','theme' => 'info','url' => auth()->user()->can('attendance.manage') ? route('attendance.logs.index') : null,'urlText' => 'View time logs'] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('adminlte-small-box'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\JeroenNoten\LaravelAdminLte\View\Components\Widget\SmallBox::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal28a68399664384fcdb4ffafd23cbfe61)): ?>
+<?php $attributes = $__attributesOriginal28a68399664384fcdb4ffafd23cbfe61; ?>
+<?php unset($__attributesOriginal28a68399664384fcdb4ffafd23cbfe61); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal28a68399664384fcdb4ffafd23cbfe61)): ?>
+<?php $component = $__componentOriginal28a68399664384fcdb4ffafd23cbfe61; ?>
+<?php unset($__componentOriginal28a68399664384fcdb4ffafd23cbfe61); ?>
+<?php endif; ?>
+        </div>
+        <div class="col-lg-3 col-6">
+            <?php if (isset($component)) { $__componentOriginal28a68399664384fcdb4ffafd23cbfe61 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal28a68399664384fcdb4ffafd23cbfe61 = $attributes; } ?>
+<?php $component = JeroenNoten\LaravelAdminLte\View\Components\Widget\SmallBox::resolve(['title' => ''.e(number_format($stats['pending_leaves'])).'','text' => 'Pending leave requests','icon' => 'bi bi-airplane','theme' => 'warning','url' => auth()->user()->can('leaves.approve') ? route('leaves.review') : null,'urlText' => 'Review'] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('adminlte-small-box'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\JeroenNoten\LaravelAdminLte\View\Components\Widget\SmallBox::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal28a68399664384fcdb4ffafd23cbfe61)): ?>
+<?php $attributes = $__attributesOriginal28a68399664384fcdb4ffafd23cbfe61; ?>
+<?php unset($__attributesOriginal28a68399664384fcdb4ffafd23cbfe61); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal28a68399664384fcdb4ffafd23cbfe61)): ?>
+<?php $component = $__componentOriginal28a68399664384fcdb4ffafd23cbfe61; ?>
+<?php unset($__componentOriginal28a68399664384fcdb4ffafd23cbfe61); ?>
+<?php endif; ?>
+        </div>
+        <div class="col-lg-3 col-6">
+            <?php if (isset($component)) { $__componentOriginal28a68399664384fcdb4ffafd23cbfe61 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal28a68399664384fcdb4ffafd23cbfe61 = $attributes; } ?>
 <?php $component = JeroenNoten\LaravelAdminLte\View\Components\Widget\SmallBox::resolve(['title' => ''.e(number_format($stats['active_users'])).'','text' => 'Active users','icon' => 'bi bi-people-fill','theme' => 'primary'] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('adminlte-small-box'); ?>
 <?php if ($component->shouldRender()): ?>

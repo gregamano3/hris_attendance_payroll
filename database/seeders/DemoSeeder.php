@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Features\Attendance\Compute\ComputeAttendanceDay;
+use App\Features\Attendance\Enums\TimeLogSource;
+use App\Features\Attendance\Enums\TimeLogType;
+use App\Features\Attendance\Models\TimeLog;
 use App\Features\Employees\Enums\EmploymentType;
 use App\Features\Employees\Models\Department;
 use App\Features\Employees\Models\Employee;
@@ -70,10 +74,18 @@ class DemoSeeder extends Seeder
             }
         }
 
-        if (Employee::query()->count() >= 20) {
-            return;
+        if (Employee::query()->count() < 20) {
+            $this->seedEmployees($positions);
         }
 
+        $this->seedTimeLogs();
+    }
+
+    /**
+     * @param  array<string, Position>  $positions
+     */
+    private function seedEmployees(array $positions): void
+    {
         foreach (range(1, 20) as $i) {
             $position = fake()->randomElement($positions);
 
@@ -89,6 +101,41 @@ class DemoSeeder extends Seeder
                     fn (EmployeeFactory $factory) => $factory->monthly(fake()->numberBetween(20, 60) * 1000),
                 )
                 ->create();
+        }
+    }
+
+    /**
+     * Punches for the last three weeks so DTRs and payroll have data.
+     */
+    private function seedTimeLogs(): void
+    {
+        if (TimeLog::query()->exists()) {
+            return;
+        }
+
+        $from = today()->subDays(21);
+        $compute = app(ComputeAttendanceDay::class);
+
+        TimeLog::withoutEvents(function () use ($from) {
+            foreach (Employee::query()->active()->pluck('id') as $employeeId) {
+                for ($date = $from->copy(); $date->lt(today()); $date->addDay()) {
+                    if ($date->isWeekend() || fake()->boolean(4)) {
+                        continue; // rest day or the occasional absence
+                    }
+
+                    $in = $date->copy()->setTime(7, 45)->addMinutes(fake()->biasedNumberBetween(0, 45, 'Faker\Provider\Biased::linearLow'));
+                    $out = $date->copy()->setTime(17, 0)->addMinutes(fake()->boolean(25) ? fake()->numberBetween(30, 180) : fake()->numberBetween(0, 10));
+
+                    TimeLog::query()->insert([
+                        ['employee_id' => $employeeId, 'logged_at' => $in, 'type' => TimeLogType::In->value, 'source' => TimeLogSource::Import->value, 'created_at' => now(), 'updated_at' => now()],
+                        ['employee_id' => $employeeId, 'logged_at' => $out, 'type' => TimeLogType::Out->value, 'source' => TimeLogSource::Import->value, 'created_at' => now(), 'updated_at' => now()],
+                    ]);
+                }
+            }
+        });
+
+        foreach (Employee::query()->active()->pluck('id') as $employeeId) {
+            $compute->handleRange($employeeId, $from, today());
         }
     }
 }

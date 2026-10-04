@@ -10,6 +10,16 @@
                 url-text="View employees" />
         </div>
         <div class="col-lg-3 col-6">
+            <x-adminlte-small-box title="{{ number_format($stats['clocked_in_today']) }}" text="Clocked in today"
+                icon="bi bi-fingerprint" theme="info" :url="auth()->user()->can('attendance.manage') ? route('attendance.logs.index') : null"
+                url-text="View time logs" />
+        </div>
+        <div class="col-lg-3 col-6">
+            <x-adminlte-small-box title="{{ number_format($stats['pending_leaves']) }}" text="Pending leave requests"
+                icon="bi bi-airplane" theme="warning" :url="auth()->user()->can('leaves.approve') ? route('leaves.review') : null"
+                url-text="Review" />
+        </div>
+        <div class="col-lg-3 col-6">
             <x-adminlte-small-box title="{{ number_format($stats['active_users']) }}" text="Active users"
                 icon="bi bi-people-fill" theme="primary" />
         </div>

@@ -46,6 +46,18 @@ Outside production the seeder also creates a demo organisation with one account 
 
 Run `make help` to see all commands.
 
+## Attendance rules
+
+Raw punches (`time_logs`) are turned into one `attendance_days` row per employee and date by
+`App\Features\Attendance\Compute\AttendanceCalculator`. A queued job recomputes affected days whenever
+punches, shift assignments, holidays or approved leaves change, and `php artisan attendance:compute` runs nightly.
+
+- **Late** counts only beyond the shift's grace period, and then counts in full.
+- **Undertime** is the time left before the shift ends. **Worked** is the scheduled hours minus late and undertime.
+- **Overtime** is time after the shift ends, ignored below `ATTENDANCE_OT_THRESHOLD` (default 30 minutes).
+- **Night differential** is paid time between 22:00 and 06:00. Overnight shifts are supported.
+- On rest days and holidays all time worked counts, and anything beyond the scheduled hours becomes overtime.
+
 ## Roles
 
 | Role | Can |
