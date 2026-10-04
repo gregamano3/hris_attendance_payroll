@@ -13,4 +13,16 @@
             <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Cancel</a>
         </div>
     </form>
+
+    @if ($user->oidc_subject)
+        <div class="card" id="sso-link">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div><h3 class="fs-6 mb-1">Single sign-on</h3><p class="mb-0 small text-body-secondary">Linked to an identity provider account. Unlink it if the person's SSO identity changed; it is linked again on their next SSO sign-in.</p></div>
+                <form method="post" action="{{ route('users.sso.unlink', $user) }}">
+                    @csrf @method('delete')
+                    <button class="btn btn-outline-danger">Unlink</button>
+                </form>
+            </div>
+        </div>
+    @endif
 @stop

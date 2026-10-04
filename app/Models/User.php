@@ -20,11 +20,12 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $oidc_subject
  * @property bool $is_active
  * @property Carbon|null $last_login_at
  */
 #[Fillable(['name', 'email', 'password', 'is_active'])]
-#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
+#[Hidden(['password', 'remember_token', 'oidc_subject', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     use Auditable;
