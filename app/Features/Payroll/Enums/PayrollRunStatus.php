@@ -5,6 +5,7 @@ namespace App\Features\Payroll\Enums;
 enum PayrollRunStatus: string
 {
     case Draft = 'draft';
+    case Computing = 'computing';
     case Computed = 'computed';
     case Finalized = 'finalized';
 
@@ -17,6 +18,7 @@ enum PayrollRunStatus: string
     {
         return match ($this) {
             self::Draft => 'secondary',
+            self::Computing => 'warning',
             self::Computed => 'info',
             self::Finalized => 'success',
         };

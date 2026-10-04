@@ -14,9 +14,9 @@
                 <a href="{{ route('payroll.runs.bank', [$run, 'txt']) }}" class="btn btn-outline-secondary">TXT</a>
             </div>
         @endif
-        @unless ($run->isLocked())
+        @unless ($run->isLocked() || $run->isComputing())
             @can('payroll.manage')
-                <form method="post" action="{{ route('payroll.runs.compute', $run) }}">
+                <form method="post" action="{{ route('payroll.runs.compute', $run) }}" onsubmit="this.querySelector('button').disabled = true">
                     @csrf
                     <button class="btn btn-primary" id="compute-button"><i class="bi bi-calculator me-1"></i> {{ $run->computed_at ? 'Recompute' : 'Compute' }}</button>
                 </form>
@@ -61,6 +61,35 @@
         Period {{ $run->period()->label() }} · Pay date {{ $run->pay_date->format('M j, Y') }}
         @if ($run->finalized_at) · Finalized {{ $run->finalized_at->format('M j, Y g:i A') }} by {{ $run->finalizer?->name }} @endif
     </p>
+
+    @if ($run->isComputing())
+        <div class="card card-body mb-3" id="compute-progress" data-status-url="{{ route('payroll.runs.status', $run) }}">
+            <div class="mb-1">Computing payslips… this page refreshes automatically.</div>
+            <div class="progress" role="progressbar" aria-label="Computation progress" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: {{ max(5, $run->progress) }}%">{{ $run->progress }}%</div>
+            </div>
+        </div>
+        @push('js')
+            <script>
+                (function poll() {
+                    const box = document.getElementById('compute-progress');
+                    fetch(box.dataset.statusUrl, { headers: { Accept: 'application/json' } })
+                        .then((r) => r.json())
+                        .then((data) => {
+                            if (data.status !== 'computing') return window.location.reload();
+                            const bar = box.querySelector('.progress-bar');
+                            bar.style.width = Math.max(5, data.progress) + '%';
+                            bar.textContent = data.progress + '%';
+                            setTimeout(poll, 2000);
+                        })
+                        .catch(() => setTimeout(poll, 5000));
+                })();
+            </script>
+        @endpush
+    @endif
+    @if ($run->compute_error)
+        <div class="alert alert-danger">The last computation failed: {{ $run->compute_error }}</div>
+    @endif
 
     @if ($run->status === PayrollRunStatus::Draft && $run->computed_at)
         <div class="alert alert-warning">Adjustments changed since the last computation. Recompute before finalizing.</div>

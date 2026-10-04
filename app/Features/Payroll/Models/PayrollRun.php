@@ -23,6 +23,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $period_end
  * @property Carbon $pay_date
  * @property PayrollRunStatus $status
+ * @property int $progress
+ * @property string|null $compute_error
  * @property int $employee_count
  * @property Money $total_gross
  * @property Money $total_deductions
@@ -36,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $finalizer
  */
 #[Fillable([
-    'name', 'type', 'period_start', 'period_end', 'pay_date', 'status', 'employee_count', 'total_gross', 'total_deductions',
+    'name', 'type', 'period_start', 'period_end', 'pay_date', 'status', 'progress', 'compute_error', 'employee_count', 'total_gross', 'total_deductions',
     'total_net', 'total_employer', 'notes', 'created_by', 'computed_at', 'finalized_by', 'finalized_at',
 ])]
 class PayrollRun extends Model
@@ -90,6 +92,11 @@ class PayrollRun extends Model
     public function period(): Period
     {
         return new Period($this->period_start, $this->period_end);
+    }
+
+    public function isComputing(): bool
+    {
+        return $this->status === PayrollRunStatus::Computing;
     }
 
     public function isThirteenthMonth(): bool

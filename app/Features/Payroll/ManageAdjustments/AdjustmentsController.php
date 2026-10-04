@@ -18,7 +18,7 @@ class AdjustmentsController
 {
     public function store(Request $request, PayrollRun $run): RedirectResponse
     {
-        abort_if($run->isLocked(), 409);
+        abort_if($run->isLocked() || $run->isComputing(), 409);
 
         $data = $request->validate([
             'employee_id' => ['required', 'integer', Rule::exists('employees', 'id')],
@@ -40,7 +40,7 @@ class AdjustmentsController
 
     public function destroy(PayrollRun $run, PayrollAdjustment $adjustment): RedirectResponse
     {
-        abort_if($run->isLocked() || $adjustment->payroll_run_id !== $run->id, 409);
+        abort_if($run->isLocked() || $run->isComputing() || $adjustment->payroll_run_id !== $run->id, 409);
 
         $adjustment->delete();
         $run->update(['status' => PayrollRunStatus::Draft]);
