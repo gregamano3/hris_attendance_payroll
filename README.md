@@ -54,7 +54,7 @@ punches, shift assignments, holidays or approved leaves change, and `php artisan
 
 - **Late** counts only beyond the shift's grace period, and then counts in full.
 - **Undertime** is the time left before the shift ends. **Worked** is the scheduled hours minus late and undertime.
-- **Overtime** is time after the shift ends, ignored below `ATTENDANCE_OT_THRESHOLD` (default 30 minutes).
+- **Overtime** is time after the shift ends, ignored below `ATTENDANCE_OT_THRESHOLD` (default 30 minutes). With `ATTENDANCE_OT_REQUIRES_APPROVAL` (default on) only approved overtime is paid, capped at the approved hours.
 - **Night differential** is paid time between 22:00 and 06:00. Overnight shifts are supported.
 - On rest days and holidays all time worked counts, and anything beyond the scheduled hours becomes overtime.
 

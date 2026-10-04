@@ -21,6 +21,9 @@ enum Permission: string
     case LeavesRequest = 'leaves.request';
     case LeavesApprove = 'leaves.approve';
 
+    case OvertimeRequest = 'overtime.request';
+    case OvertimeApprove = 'overtime.approve';
+
     case PayrollView = 'payroll.view';
     case PayrollManage = 'payroll.manage';
     case PayrollFinalize = 'payroll.finalize';

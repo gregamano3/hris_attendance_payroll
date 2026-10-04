@@ -8,6 +8,7 @@ use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Models\EmployeeShift;
 use App\Features\Attendance\Models\Holiday;
 use App\Features\Attendance\Models\LeaveRequest;
+use App\Features\Attendance\Models\OvertimeRequest;
 use App\Features\Attendance\Models\TimeLog;
 use App\Features\Attendance\Queries\HolidayCalendar;
 use App\Features\Employees\Models\Employee;
@@ -86,5 +87,13 @@ class AttendanceServiceProvider extends FeatureServiceProvider
                 }
             }
         });
+
+        $onOvertimeChange = function (OvertimeRequest $overtime) {
+            if ($overtime->date->lte(today())) {
+                RecomputeAttendanceJob::dispatch($overtime->employee_id, $overtime->date->toDateString(), $overtime->date->toDateString());
+            }
+        };
+        OvertimeRequest::saved($onOvertimeChange);
+        OvertimeRequest::deleted($onOvertimeChange);
     }
 }
