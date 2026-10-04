@@ -14,6 +14,7 @@
             Pay date: {{ $payslip->run->pay_date->format('M j, Y') }}<br>
             Rate: {{ $payslip->basic_rate->format() }} / {{ $payslip->rate_type === 'monthly' ? 'month' : 'day' }}
             (daily {{ $payslip->daily_rate->format() }})
+            @if ($payslip->is_minimum_wage_earner)<br><em>Minimum wage earner: statutory wages exempt from withholding tax</em>@endif
         </td>
     </tr>
 </table>

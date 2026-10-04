@@ -16,6 +16,10 @@ use App\Shared\Money\Money;
  * late/undertime, plus premiums for work outside ordinary days (only the part
  * not already covered by the salary).
  * Daily-rated: worked hours, unworked regular holidays and paid leaves.
+ *
+ * Minimum wage earners (RR 11-2018): statutory minimum wage, holiday pay,
+ * overtime, night differential and premiums are exempt from withholding tax;
+ * only other taxable income (e.g. taxable allowances) is taxed.
  */
 class PayslipCalculator
 {
@@ -199,6 +203,11 @@ class PayslipCalculator
                 : new PayslipLine(PayslipLine::DEDUCTION, 'OTHER_DEDUCTION', $adjustment['label'], $adjustment['amount']);
         }
 
+        if ($input->minimumWageEarner) {
+            $lines = array_map(fn (PayslipLine $l) => $l->code === 'ALLOWANCE' || $l->kind !== PayslipLine::EARNING ? $l
+                : new PayslipLine($l->kind, $l->code, $l->label, $l->amount, $l->quantity, $l->unit, taxable: false), $lines);
+        }
+
         $gross = $this->sum($lines, PayslipLine::EARNING);
         $taxableEarnings = $this->sum(array_filter($lines, fn (PayslipLine $l) => $l->taxable), PayslipLine::EARNING);
 
@@ -216,7 +225,9 @@ class PayslipCalculator
         ];
         $employeeContributions = $this->sum($contributions, PayslipLine::DEDUCTION);
 
-        $taxable = $taxableEarnings->minus($employeeContributions)->max(Money::zero());
+        // Contributions reduce taxable pay, except for minimum wage earners whose
+        // contributions relate to their exempt wages.
+        $taxable = ($input->minimumWageEarner ? $taxableEarnings : $taxableEarnings->minus($employeeContributions))->max(Money::zero());
         $withholding = $this->tax->compute($taxable);
 
         $lines = [

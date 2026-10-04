@@ -15,5 +15,6 @@ final readonly class PayslipInput
         public Money $basicRate,
         public array $days,
         public array $adjustments = [],
+        public bool $minimumWageEarner = false,
     ) {}
 }

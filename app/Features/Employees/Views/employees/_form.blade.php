@@ -39,7 +39,14 @@
         <x-form.select name="rate_type" label="Rate type" :options="$rateTypes" :value="$employee->rate_type" col="col-md-4" required />
         <x-form.input name="basic_rate" label="Basic rate (₱)" type="number" step="0.01" min="0"
             :value="$employee->basic_rate?->toDecimal()" col="col-md-4" required />
-        <div class="col-md-4"></div>
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check form-switch mb-2">
+                <input type="hidden" name="is_minimum_wage_earner" value="0">
+                <input class="form-check-input" type="checkbox" role="switch" id="is_minimum_wage_earner" name="is_minimum_wage_earner" value="1"
+                    @checked(old('is_minimum_wage_earner', $employee->is_minimum_wage_earner))>
+                <label class="form-check-label" for="is_minimum_wage_earner">Minimum wage earner (tax-exempt wages)</label>
+            </div>
+        </div>
         @foreach (GovernmentId::cases() as $id)
             <x-form.input :name="$id->value" :label="$id->label()" :value="$employee->governmentId($id)" col="col-md-3"
                 :placeholder="$id->placeholder()" inputmode="numeric" />

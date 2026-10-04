@@ -40,7 +40,8 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-4">Regularized</dt><dd class="col-sm-8">{{ $employee->regularized_at?->format('M d, Y') ?? '—' }}</dd>
                     <dt class="col-sm-4">Separated</dt><dd class="col-sm-8">{{ $employee->separated_at?->format('M d, Y') ?? '—' }}</dd>
-                    <dt class="col-sm-4">Basic rate</dt><dd class="col-sm-8">{{ $employee->basic_rate->format() }} / {{ $employee->rate_type->unit() }}</dd>
+                    <dt class="col-sm-4">Basic rate</dt><dd class="col-sm-8">{{ $employee->basic_rate->format() }} / {{ $employee->rate_type->unit() }}
+                        @if ($employee->is_minimum_wage_earner)<span class="badge text-bg-info">Minimum wage earner</span>@endif</dd>
                     @foreach (GovernmentId::cases() as $id)
                         <dt class="col-sm-4">{{ $id->label() }}</dt><dd class="col-sm-8">{{ $employee->governmentId($id) ?: '—' }}</dd>
                     @endforeach

@@ -153,3 +153,18 @@ it('restricts payroll management by role', function () {
     $this->actingAs(userWithRole(Role::Hr))->get('/payroll/runs')->assertForbidden();
     $this->actingAs(userWithRole(Role::Employee))->post("/payroll/runs/{$run->id}/compute")->assertForbidden();
 });
+
+it('marks minimum wage earners on payslips and withholds no tax on their wages', function () {
+    $employee = Employee::factory()->daily(695)->create(['hired_at' => '2020-01-01', 'is_minimum_wage_earner' => true]);
+    punchFullPeriod($employee);
+    $run = createRun();
+
+    $this->actingAs($this->officer)->post("/payroll/runs/{$run->id}/compute");
+
+    $payslip = Payslip::query()->with('lines')->sole();
+    expect($payslip->is_minimum_wage_earner)->toBeTrue()
+        ->and($payslip->taxable_income->isZero())->toBeTrue()
+        ->and($payslip->amountOf('TAX')->isZero())->toBeTrue();
+
+    $this->actingAs($this->officer)->get("/payroll/payslips/{$payslip->id}")->assertSee('Minimum wage earner');
+});
