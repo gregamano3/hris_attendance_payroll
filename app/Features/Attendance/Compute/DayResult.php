@@ -21,6 +21,7 @@ final readonly class DayResult
         public ?HolidayType $holiday = null,
         public ?int $leaveRequestId = null,
         public float $leaveFraction = 0.0,
+        public int $overbreakMinutes = 0,
     ) {}
 
     /**
@@ -35,6 +36,7 @@ final readonly class DayResult
             'worked_minutes' => $this->workedMinutes,
             'late_minutes' => $this->lateMinutes,
             'undertime_minutes' => $this->undertimeMinutes,
+            'overbreak_minutes' => $this->overbreakMinutes,
             'overtime_minutes' => $this->overtimeMinutes,
             'night_diff_minutes' => $this->nightDiffMinutes,
             'is_rest_day' => $this->isRestDay,

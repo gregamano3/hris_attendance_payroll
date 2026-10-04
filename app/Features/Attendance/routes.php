@@ -5,6 +5,7 @@ use App\Features\Attendance\ImportTimeLogs\ImportTimeLogsController;
 use App\Features\Attendance\ManageDevices\DevicesController;
 use App\Features\Attendance\ManageHolidays\HolidaysController;
 use App\Features\Attendance\ManageLeaveTypes\LeaveTypesController;
+use App\Features\Attendance\ManageRoster\RosterController;
 use App\Features\Attendance\ManageShifts\ShiftsController;
 use App\Features\Attendance\ManageTimeLogs\TimeLogsController;
 use App\Features\Attendance\PrintDtr\PrintDtrController;
@@ -39,6 +40,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('can:attendance.manage')->group(function () {
         Route::post('shifts/assign', [ShiftsController::class, 'assign'])->name('shifts.assign');
+        Route::get('attendance/roster', [RosterController::class, 'index'])->name('roster.index');
+        Route::post('attendance/roster', [RosterController::class, 'store'])->name('roster.store');
         Route::resource('shifts', ShiftsController::class)->except('show');
         Route::resource('holidays', HolidaysController::class)->except(['show', 'create']);
         Route::resource('leave-types', LeaveTypesController::class)->only(['index', 'store', 'update']);

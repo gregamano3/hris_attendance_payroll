@@ -20,8 +20,12 @@ use Illuminate\Support\Carbon;
  * @property int $grace_minutes
  * @property list<int> $work_days
  * @property bool $is_default
+ * @property bool $is_flexible
+ * @property string|null $core_start
+ * @property string|null $core_end
+ * @property int|null $required_minutes
  */
-#[Fillable(['name', 'start_time', 'end_time', 'break_minutes', 'grace_minutes', 'work_days', 'is_default'])]
+#[Fillable(['name', 'start_time', 'end_time', 'break_minutes', 'grace_minutes', 'work_days', 'is_default', 'is_flexible', 'core_start', 'core_end', 'required_minutes'])]
 #[UseFactory(ShiftFactory::class)]
 class Shift extends Model
 {
@@ -40,6 +44,8 @@ class Shift extends Model
         return [
             'work_days' => 'array',
             'is_default' => 'boolean',
+            'is_flexible' => 'boolean',
+            'required_minutes' => 'integer',
             'break_minutes' => 'integer',
             'grace_minutes' => 'integer',
         ];
@@ -80,9 +86,26 @@ class Shift extends Model
      */
     public function scheduledMinutes(): int
     {
+        if ($this->is_flexible && $this->required_minutes) {
+            return $this->required_minutes;
+        }
+
         $today = Carbon::today();
 
         return (int) $this->startsAt($today)->diffInMinutes($this->endsAt($today)) - $this->break_minutes;
+    }
+
+    /**
+     * A copy of the shift where the given date is (or isn't) a work day, for
+     * roster overrides. Never saved.
+     */
+    public function withWorkDay(Carbon $date, bool $works): self
+    {
+        $copy = clone $this;
+        $days = array_map('intval', $this->work_days);
+        $copy->work_days = $works ? array_values(array_unique([...$days, $date->isoWeekday()])) : array_values(array_diff($days, [$date->isoWeekday()]));
+
+        return $copy;
     }
 
     public function label(): string

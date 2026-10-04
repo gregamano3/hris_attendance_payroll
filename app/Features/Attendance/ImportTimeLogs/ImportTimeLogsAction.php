@@ -68,7 +68,7 @@ class ImportTimeLogsAction
 
                 $error = match (true) {
                     $employeeId === null => "Line {$line}: unknown employee [{$data['employee_no']}].",
-                    $type === null => "Line {$line}: type must be \"in\" or \"out\".",
+                    $type === null => "Line {$line}: type must be in, out, break_out or break_in.",
                     $loggedAt === null => "Line {$line}: invalid date/time [{$data['logged_at']}].",
                     $loggedAt->isFuture() => "Line {$line}: date/time is in the future.",
                     default => null,

@@ -891,6 +891,12 @@ return [
             'can' => 'attendance.manage',
         ],
         [
+            'text' => 'Roster',
+            'route' => 'roster.index',
+            'icon' => 'bi bi-grid-3x3-gap',
+            'can' => 'attendance.manage',
+        ],
+        [
             'text' => 'Shifts',
             'route' => 'shifts.index',
             'icon' => 'bi bi-calendar-week',

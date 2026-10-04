@@ -26,7 +26,7 @@ class DevicePunchesController
             'punches' => ['required', 'array', 'min:1', 'max:500'],
             'punches.*.employee_no' => ['required', 'string', 'max:30'],
             'punches.*.timestamp' => ['required', 'date'],
-            'punches.*.type' => ['required', 'in:in,out'],
+            'punches.*.type' => ['required', 'in:in,out,break_out,break_in'],
         ]);
 
         /** @var AttendanceDevice $device */
