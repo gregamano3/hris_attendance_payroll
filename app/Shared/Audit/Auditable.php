@@ -41,12 +41,30 @@ trait Auditable
      */
     private static function writeAudit(Model $model, string $event, ?array $old, ?array $new): void
     {
-        $clean = function (?array $values): ?array {
+        $encrypted = array_keys(array_filter(
+            $model->getCasts(),
+            fn (string $cast) => str_starts_with($cast, 'encrypted') || str_contains($cast, 'Encrypted'),
+        ));
+
+        $clean = function (?array $values) use ($encrypted): ?array {
             if ($values === null) {
                 return null;
             }
 
             $values = array_diff_key($values, array_flip(self::$auditIgnored));
+
+            // Encrypted PII: record that it changed, never its value (not even the ciphertext).
+            foreach ($encrypted as $key) {
+                if (array_key_exists($key, $values)) {
+                    $values[$key] = $values[$key] === null ? null : '[encrypted]';
+                }
+            }
+
+            foreach (array_keys($values) as $key) {
+                if (str_ends_with((string) $key, '_bidx')) {
+                    unset($values[$key]);
+                }
+            }
 
             foreach (self::$auditRedacted as $key) {
                 if (array_key_exists($key, $values)) {

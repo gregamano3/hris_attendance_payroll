@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
+use App\Shared\Security\BlindIndex;
+use App\Shared\Security\EncryptedDate;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -83,7 +85,16 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
-            'birth_date' => 'date',
+            // PII encrypted at rest (see SECURITY.md)
+            'birth_date' => EncryptedDate::class,
+            'mobile' => 'encrypted',
+            'address' => 'encrypted',
+            'sss_no' => 'encrypted',
+            'philhealth_no' => 'encrypted',
+            'pagibig_no' => 'encrypted',
+            'tin' => 'encrypted',
+            'bank_account_name' => 'encrypted',
+            'bank_account_no' => 'encrypted',
             'hired_at' => 'date',
             'regularized_at' => 'date',
             'separated_at' => 'date',
@@ -119,6 +130,26 @@ class Employee extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected static function booted(): void
+    {
+        // Keep the blind indexes of the encrypted government IDs in sync.
+        static::saving(function (self $employee) {
+            foreach (GovernmentId::cases() as $id) {
+                if ($employee->isDirty($id->value) || ! $employee->exists) {
+                    $employee->setAttribute($id->blindIndexColumn(), BlindIndex::hash($id->value, $employee->getAttribute($id->value)));
+                }
+            }
+        });
+    }
+
+    /**
+     * Find an employee by a government ID without decrypting every row.
+     */
+    public static function findByGovernmentId(GovernmentId $id, string $value): ?self
+    {
+        return static::withTrashed()->where($id->blindIndexColumn(), BlindIndex::hash($id->value, GovernmentId::normalize($value)))->first();
     }
 
     /**

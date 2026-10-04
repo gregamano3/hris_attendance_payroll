@@ -51,6 +51,14 @@ enum GovernmentId: string
         };
     }
 
+    /**
+     * Column holding the HMAC blind index of the encrypted value.
+     */
+    public function blindIndexColumn(): string
+    {
+        return $this->value.'_bidx';
+    }
+
     public function placeholder(): string
     {
         return $this->format(str_repeat('0', max($this->lengths())));
