@@ -51,6 +51,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $philhealth_no
  * @property string|null $pagibig_no
  * @property string|null $tin
+ * @property string|null $bank_name
+ * @property string|null $bank_account_name
+ * @property string|null $bank_account_no
  * @property-read string $full_name
  * @property-read Department|null $department
  * @property-read Position|null $position
@@ -60,7 +63,7 @@ use Illuminate\Support\Carbon;
     'employee_no', 'user_id', 'first_name', 'middle_name', 'last_name', 'suffix', 'birth_date', 'gender',
     'civil_status', 'email', 'mobile', 'address', 'department_id', 'position_id', 'employment_type', 'status',
     'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'basic_rate', 'is_minimum_wage_earner', 'sss_no', 'philhealth_no',
-    'pagibig_no', 'tin',
+    'pagibig_no', 'tin', 'bank_name', 'bank_account_name', 'bank_account_no',
 ])]
 #[UseFactory(EmployeeFactory::class)]
 class Employee extends Model
@@ -152,6 +155,11 @@ class Employee extends Model
         $suffix = $this->suffix ? ' '.$this->suffix : '';
 
         return "{$this->last_name}, {$this->first_name}{$middleInitial}{$suffix}";
+    }
+
+    public function hasBankAccount(): bool
+    {
+        return filled($this->bank_account_no) && filled($this->bank_name);
     }
 
     public function governmentId(GovernmentId $id): string

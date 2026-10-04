@@ -47,6 +47,9 @@ class EmployeeFactory extends Factory
             'philhealth_no' => fake()->unique()->numerify('############'),
             'pagibig_no' => fake()->unique()->numerify('############'),
             'tin' => fake()->unique()->numerify('#########'),
+            'bank_name' => 'BDO',
+            'bank_account_name' => null,
+            'bank_account_no' => fake()->unique()->numerify('############'),
         ];
     }
 
@@ -69,6 +72,11 @@ class EmployeeFactory extends Factory
     public function forUser(?User $user = null): static
     {
         return $this->state(fn () => ['user_id' => $user !== null ? $user->id : User::factory()]);
+    }
+
+    public function withoutBankAccount(): static
+    {
+        return $this->state(fn () => ['bank_name' => null, 'bank_account_no' => null]);
     }
 
     public function separated(): static
