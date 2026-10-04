@@ -3,6 +3,7 @@
 namespace App\Features\Attendance\Queries;
 
 use App\Features\Attendance\Enums\LeaveStatus;
+use App\Features\Attendance\Models\LeaveCredit;
 use App\Features\Attendance\Models\LeaveRequest;
 use App\Features\Attendance\Models\LeaveType;
 use App\Features\Attendance\Models\Shift;
@@ -17,9 +18,10 @@ class LeaveBalances
     ) {}
 
     /**
-     * Per leave type: allowance, days used (approved + pending) and remaining.
+     * Per leave type: credits (accrued + carried over for accruing types, the
+     * yearly allowance otherwise), days used (approved + pending) and remaining.
      *
-     * @return Collection<int, array{type: LeaveType, allowance: int, used: float, remaining: float|null}>
+     * @return Collection<int, array{type: LeaveType, allowance: float, used: float, remaining: float|null}>
      */
     public function forEmployee(int $employeeId, int $year): Collection
     {
@@ -31,12 +33,19 @@ class LeaveBalances
             ->groupBy('leave_type_id')
             ->pluck('total', 'leave_type_id');
 
-        return LeaveType::query()->orderBy('name')->get()->map(fn (LeaveType $type) => [
-            'type' => $type,
-            'allowance' => $type->days_per_year,
-            'used' => (float) ($used[$type->id] ?? 0),
-            'remaining' => $type->hasYearlyCap() ? $type->days_per_year - (float) ($used[$type->id] ?? 0) : null,
-        ]);
+        $credits = LeaveCredit::query()->where('employee_id', $employeeId)->where('year', $year)->get()->keyBy('leave_type_id');
+
+        return LeaveType::query()->orderBy('name')->get()->map(function (LeaveType $type) use ($used, $credits) {
+            $allowance = $type->accrues() ? ($credits->get($type->id)?->total() ?? 0.0) : (float) $type->days_per_year;
+            $usedDays = (float) ($used[$type->id] ?? 0);
+
+            return [
+                'type' => $type,
+                'allowance' => $allowance,
+                'used' => $usedDays,
+                'remaining' => $type->hasYearlyCap() ? $allowance - $usedDays : null,
+            ];
+        });
     }
 
     /**

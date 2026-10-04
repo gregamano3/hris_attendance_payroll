@@ -116,6 +116,7 @@ class ComputePayrollRun
             overtimeMinutes: $day->overtime_minutes,
             nightDiffMinutes: $day->night_diff_minutes,
             paidLeave: (bool) $day->leaveRequest?->leaveType->is_paid,
+            leaveFraction: (float) $day->leave_fraction,
         );
     }
 

@@ -37,12 +37,12 @@ class ComputeAttendanceDay
             ->orderBy('logged_at')
             ->get();
 
-        $leaveId = LeaveRequest::query()
+        $leave = LeaveRequest::query()
             ->where('employee_id', $employeeId)
             ->where('status', LeaveStatus::Approved)
             ->whereDate('start_date', '<=', $date)
             ->whereDate('end_date', '>=', $date)
-            ->value('id');
+            ->first(['id', 'day_part']);
 
         $approvedOvertime = config('hris.attendance.overtime_requires_approval')
             ? (int) OvertimeRequest::query()
@@ -58,8 +58,9 @@ class ComputeAttendanceDay
             timeIns: $logs->where('type', TimeLogType::In)->pluck('logged_at')->values()->all(),
             timeOuts: $logs->where('type', TimeLogType::Out)->pluck('logged_at')->values()->all(),
             holiday: $this->holidays->typeOn($date),
-            leaveRequestId: $leaveId,
+            leaveRequestId: $leave?->id,
             approvedOvertimeMinutes: $approvedOvertime,
+            halfDayLeave: $leave !== null && $leave->day_part !== 'full' ? $leave->day_part : null,
         ));
 
         return AttendanceDay::query()->updateOrCreate(

@@ -880,6 +880,12 @@ return [
             'can' => 'attendance.manage',
             'active' => ['holidays*'],
         ],
+        [
+            'text' => 'Leave types',
+            'route' => 'leave-types.index',
+            'icon' => 'bi bi-sliders',
+            'can' => 'attendance.manage',
+        ],
         ['header' => 'PAYROLL'],
         [
             'text' => 'My payslips',

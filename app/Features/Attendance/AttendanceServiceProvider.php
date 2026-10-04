@@ -2,6 +2,7 @@
 
 namespace App\Features\Attendance;
 
+use App\Features\Attendance\Compute\AccrueLeaveCreditsCommand;
 use App\Features\Attendance\Compute\ComputeAttendanceCommand;
 use App\Features\Attendance\Compute\RecomputeAttendanceJob;
 use App\Features\Attendance\Enums\LeaveStatus;
@@ -20,11 +21,13 @@ class AttendanceServiceProvider extends FeatureServiceProvider
 {
     protected function bootFeature(): void
     {
-        $this->commands([ComputeAttendanceCommand::class]);
+        $this->commands([ComputeAttendanceCommand::class, AccrueLeaveCreditsCommand::class]);
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
             // Finalise yesterday (absences) and refresh today shortly after midnight.
             $schedule->command('attendance:compute')->dailyAt('00:30')->withoutOverlapping();
+            // Credit the month that just ended.
+            $schedule->command('leaves:accrue')->monthlyOn(1, '01:00')->withoutOverlapping();
         });
 
         $this->registerRecomputeTriggers();

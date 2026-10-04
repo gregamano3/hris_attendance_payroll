@@ -20,6 +20,7 @@ final readonly class DayResult
         public bool $isRestDay = false,
         public ?HolidayType $holiday = null,
         public ?int $leaveRequestId = null,
+        public float $leaveFraction = 0.0,
     ) {}
 
     /**
@@ -39,6 +40,7 @@ final readonly class DayResult
             'is_rest_day' => $this->isRestDay,
             'holiday_type' => $this->holiday,
             'leave_request_id' => $this->leaveRequestId,
+            'leave_fraction' => $this->leaveFraction,
         ];
     }
 }

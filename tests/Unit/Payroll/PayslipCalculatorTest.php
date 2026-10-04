@@ -187,3 +187,19 @@ it('taxes other income of minimum wage earners above the threshold', function ()
     expect($result->taxableIncome->toDecimal())->toBe('20000.00')
         ->and($result->amountOf('TAX')->toDecimal())->toBe('1604.10'); // 937.50 + 20% × (20,000 − 16,667)
 });
+
+it('pays half-day leaves as half paid leave and half work', function () {
+    $days = [
+        new DayData('2026-10-01', DayData::PRESENT, workedMinutes: 240, paidLeave: true, leaveFraction: 0.5),  // worked the other half
+        new DayData('2026-10-02', DayData::ABSENT, paidLeave: true, leaveFraction: 0.5),                      // skipped the other half
+    ];
+
+    $daily = payslipCalculator()->compute(new PayslipInput(monthlyRated: false, basicRate: Money::ofPesos(800), days: $days));
+    $monthly = payslipCalculator()->compute(new PayslipInput(monthlyRated: true, basicRate: Money::ofPesos(26100), days: $days));
+
+    expect($daily->amountOf('BASIC')->toDecimal())->toBe('400.00')        // 4h worked
+        ->and($daily->amountOf('PAID_LEAVE')->toDecimal())->toBe('800.00') // two half days
+        ->and($daily->attendance['paid_leave_days'])->toBe(1.0)
+        ->and($monthly->amountOf('ABSENCES')->toDecimal())->toBe('-600.00') // only the unworked half of Oct 2 (daily 1,200)
+        ->and($monthly->amountOf('TARDINESS')->isZero())->toBeTrue();
+});

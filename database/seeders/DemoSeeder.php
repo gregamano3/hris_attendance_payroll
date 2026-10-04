@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Features\Attendance\Compute\AccrueLeaveCredits;
 use App\Features\Attendance\Compute\ComputeAttendanceDay;
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Enums\TimeLogSource;
@@ -81,6 +82,9 @@ class DemoSeeder extends Seeder
         }
 
         $this->seedTimeLogs();
+
+        // Leave credits for the months already completed this year.
+        app(AccrueLeaveCredits::class)->handle(today()->subMonthNoOverflow()->endOfMonth());
     }
 
     /**

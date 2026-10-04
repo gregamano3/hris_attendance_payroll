@@ -44,12 +44,19 @@ class LeaveRequestsController
             'leave_type_id' => ['required', 'integer', Rule::exists('leave_types', 'id')],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'day_part' => ['nullable', Rule::in(['full', 'am', 'pm'])],
             'reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $data['day_part'] ??= 'full';
+
+        if ($data['day_part'] !== 'full' && $data['start_date'] !== $data['end_date']) {
+            throw ValidationException::withMessages(['day_part' => 'Half-day leaves cover a single date.']);
+        }
+
         $from = Carbon::parse($data['start_date']);
         $to = Carbon::parse($data['end_date']);
-        $days = $this->balances->workingDays($employee->id, $from, $to);
+        $days = $this->balances->workingDays($employee->id, $from, $to) * ($data['day_part'] === 'full' ? 1 : 0.5);
 
         if ($days === 0) {
             throw ValidationException::withMessages(['end_date' => 'The selected dates contain no working days.']);
