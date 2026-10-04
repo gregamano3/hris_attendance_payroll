@@ -229,3 +229,39 @@ it('marks a half-day leave without punches as absent for the other half', functi
 it('records a full leave fraction for full-day leaves', function () {
     expect(computeDay('2026-10-05', dayShift(), extra: ['leave' => 9])->leaveFraction)->toBe(1.0);
 });
+
+function flexShift(): Shift
+{
+    // Window 06:00–20:00, core 10:00–15:00, 8 required hours, 60 min break.
+    return new Shift([
+        'name' => 'Flexi', 'start_time' => '06:00:00', 'end_time' => '20:00:00', 'break_minutes' => 60, 'grace_minutes' => 0,
+        'work_days' => [1, 2, 3, 4, 5], 'is_flexible' => true, 'core_start' => '10:00:00', 'core_end' => '15:00:00', 'required_minutes' => 480,
+    ]);
+}
+
+it('computes flexible schedules against core and required hours', function () {
+    $early = computeDay('2026-10-05', flexShift(), ['2026-10-05 07:00'], ['2026-10-05 16:00']);
+    $late = computeDay('2026-10-05', flexShift(), ['2026-10-05 10:30'], ['2026-10-05 19:30']);
+    $short = computeDay('2026-10-05', flexShift(), ['2026-10-05 09:00'], ['2026-10-05 15:00']);
+    $long = computeDay('2026-10-05', flexShift(), ['2026-10-05 07:00'], ['2026-10-05 18:00']);
+
+    expect([$early->workedMinutes, $early->lateMinutes, $early->undertimeMinutes])->toBe([480, 0, 0])
+        ->and([$late->workedMinutes, $late->lateMinutes])->toBe([480, 30])          // missed the core start
+        ->and([$short->workedMinutes, $short->undertimeMinutes])->toBe([300, 180])  // 6h present − 1h break
+        ->and($long->overtimeMinutes)->toBe(120);
+});
+
+it('deducts break time beyond the allowance', function () {
+    $day = (new AttendanceCalculator(overtimeThresholdMinutes: 30))->compute(new DayInput(
+        date: Carbon::parse('2026-10-05'),
+        shift: dayShift(),
+        timeIns: [Carbon::parse('2026-10-05 08:00')],
+        timeOuts: [Carbon::parse('2026-10-05 17:00')],
+        now: Carbon::parse('2026-12-31'),
+        breakOuts: [Carbon::parse('2026-10-05 12:00'), Carbon::parse('2026-10-05 15:00')],
+        breakIns: [Carbon::parse('2026-10-05 13:15'), Carbon::parse('2026-10-05 15:20')],
+    ));
+
+    expect($day->overbreakMinutes)->toBe(35)   // 75 + 20 taken, 60 allowed
+        ->and($day->workedMinutes)->toBe(445);
+});

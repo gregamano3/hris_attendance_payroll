@@ -60,6 +60,8 @@ class ComputeAttendanceDay
             shift: $shift,
             timeIns: $logs->where('type', TimeLogType::In)->pluck('logged_at')->values()->all(),
             timeOuts: $logs->where('type', TimeLogType::Out)->pluck('logged_at')->values()->all(),
+            breakOuts: $logs->where('type', TimeLogType::BreakOut)->pluck('logged_at')->values()->all(),
+            breakIns: $logs->where('type', TimeLogType::BreakIn)->pluck('logged_at')->values()->all(),
             holiday: $this->holidays->typeOn($date, $this->branchOf($employeeId)),
             leaveRequestId: $leave?->id,
             approvedOvertimeMinutes: $approvedOvertime,

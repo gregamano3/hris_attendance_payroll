@@ -14,6 +14,8 @@ final readonly class DayInput
     /**
      * @param  list<Carbon>  $timeIns  punches of type "in" within the day's window
      * @param  list<Carbon>  $timeOuts  punches of type "out" within the day's window
+     * @param  list<Carbon>  $breakOuts  break start punches
+     * @param  list<Carbon>  $breakIns  break end punches
      */
     public function __construct(
         public Carbon $date,
@@ -25,5 +27,7 @@ final readonly class DayInput
         public ?Carbon $now = null,
         public ?int $approvedOvertimeMinutes = null, // null = overtime needs no approval
         public ?string $halfDayLeave = null, // am | pm: half of the shift is on leave
+        public array $breakOuts = [],
+        public array $breakIns = [],
     ) {}
 }

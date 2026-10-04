@@ -16,11 +16,22 @@
                             @csrf
                             <input type="hidden" name="latitude" id="clock-latitude">
                             <input type="hidden" name="longitude" id="clock-longitude">
-                            <button type="submit" id="punch-button"
-                                class="btn btn-lg px-5 {{ $nextType->value === 'in' ? 'btn-success' : 'btn-danger' }}">
-                                <i class="bi {{ $nextType->value === 'in' ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right' }} me-1"></i>
-                                {{ $nextType->value === 'in' ? 'Clock in' : 'Clock out' }}
-                            </button>
+                            @if ($nextType->value === 'break_in')
+                                <button type="submit" name="action" value="break" id="punch-button" class="btn btn-lg px-5 btn-warning">
+                                    <i class="bi bi-cup-hot me-1"></i> End break
+                                </button>
+                            @else
+                                <button type="submit" id="punch-button"
+                                    class="btn btn-lg px-5 {{ $nextType->value === 'in' ? 'btn-success' : 'btn-danger' }}">
+                                    <i class="bi {{ $nextType->value === 'in' ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right' }} me-1"></i>
+                                    {{ $nextType->value === 'in' ? 'Clock in' : 'Clock out' }}
+                                </button>
+                                @if ($breakAction?->value === 'break_out')
+                                    <button type="submit" name="action" value="break" class="btn btn-lg btn-outline-warning ms-2" id="break-button">
+                                        <i class="bi bi-cup-hot me-1"></i> Start break
+                                    </button>
+                                @endif
+                            @endif
                         </form>
                         <div class="small text-body-secondary mt-3">{{ $employee->full_name }} · {{ $employee->employee_no }}</div>
                         @if ($requiresLocation)
@@ -40,7 +51,7 @@
                                     <tr>
                                         <td>{{ $log->logged_at->format('D, M j') }}</td>
                                         <td>{{ $log->logged_at->format('g:i A') }}</td>
-                                        <td><span class="badge text-bg-{{ $log->type->value === 'in' ? 'success' : 'danger' }}">{{ $log->type->label() }}</span></td>
+                                        <td><span class="badge text-bg-{{ ['in' => 'success', 'out' => 'danger'][$log->type->value] ?? 'warning' }}">{{ $log->type->label() }}</span></td>
                                         <td>{{ $log->source->label() }}</td>
                                     </tr>
                                 @empty

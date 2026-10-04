@@ -171,7 +171,7 @@ class ComputePayrollRun
             holiday: $day->holiday_type?->value,
             workedMinutes: $day->worked_minutes,
             lateMinutes: $day->late_minutes,
-            undertimeMinutes: $day->undertime_minutes,
+            undertimeMinutes: $day->undertime_minutes + $day->overbreak_minutes,
             overtimeMinutes: $day->overtime_minutes,
             nightDiffMinutes: $day->night_diff_minutes,
             paidLeave: (bool) $day->leaveRequest?->leaveType->is_paid,

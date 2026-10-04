@@ -101,6 +101,10 @@ class ShiftsController
             'work_days' => ['required', 'array', 'min:1'],
             'work_days.*' => ['integer', 'between:1,7'],
             'is_default' => ['boolean'],
+            'is_flexible' => ['boolean'],
+            'core_start' => ['nullable', 'required_if:is_flexible,1', 'date_format:H:i'],
+            'core_end' => ['nullable', 'required_if:is_flexible,1', 'date_format:H:i', 'after:core_start'],
+            'required_hours' => ['nullable', 'required_if:is_flexible,1', 'numeric', 'min:1', 'max:16'],
         ]);
     }
 
@@ -111,6 +115,13 @@ class ShiftsController
     {
         $data['work_days'] = array_values(array_map('intval', $data['work_days']));
         $data['is_default'] = (bool) ($data['is_default'] ?? false);
+        $data['is_flexible'] = (bool) ($data['is_flexible'] ?? false);
+        $data['required_minutes'] = $data['is_flexible'] ? (int) round((float) $data['required_hours'] * 60) : null;
+        unset($data['required_hours']);
+
+        if (! $data['is_flexible']) {
+            $data['core_start'] = $data['core_end'] = null;
+        }
 
         if ($data['is_default']) {
             Shift::query()->whereKeyNot($shift->id ?? 0)->update(['is_default' => false]);

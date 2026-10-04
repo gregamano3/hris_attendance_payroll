@@ -28,6 +28,7 @@ class ClockController
             'requiresLocation' => app(ClockRestrictions::class)->requiresLocation($employee?->branch),
             'logs' => $logs,
             'nextType' => $employee ? $this->nextType($employee) : TimeLogType::In,
+            'breakAction' => $employee ? $this->breakAction($employee) : null,
         ]);
     }
 
@@ -52,7 +53,11 @@ class ClockController
             return back()->with('error', $check['reason']);
         }
 
-        $type = $this->nextType($employee);
+        $type = $request->input('action') === 'break' ? $this->breakAction($employee) : $this->nextType($employee);
+
+        if ($type === null) {
+            return back()->with('error', 'Clock in before taking a break.');
+        }
 
         $recent = TimeLog::query()
             ->where('employee_id', $employee->id)
@@ -78,16 +83,35 @@ class ClockController
     }
 
     /**
-     * Alternate between in and out based on the latest punch of the last 16 hours.
+     * Main button: in → out, ending a break first when on break.
      */
     private function nextType(Employee $employee): TimeLogType
     {
-        $last = TimeLog::query()
+        return match ($this->lastType($employee)) {
+            TimeLogType::In, TimeLogType::BreakIn => TimeLogType::Out,
+            TimeLogType::BreakOut => TimeLogType::BreakIn,
+            default => TimeLogType::In,
+        };
+    }
+
+    /**
+     * Break button: start a break while clocked in, end it while on break.
+     */
+    private function breakAction(Employee $employee): ?TimeLogType
+    {
+        return match ($this->lastType($employee)) {
+            TimeLogType::In, TimeLogType::BreakIn => TimeLogType::BreakOut,
+            TimeLogType::BreakOut => TimeLogType::BreakIn,
+            default => null,
+        };
+    }
+
+    private function lastType(Employee $employee): ?TimeLogType
+    {
+        return TimeLog::query()
             ->where('employee_id', $employee->id)
             ->where('logged_at', '>=', now()->subHours(16))
             ->latest('logged_at')
-            ->first();
-
-        return $last?->type === TimeLogType::In ? TimeLogType::Out : TimeLogType::In;
+            ->first()?->type;
     }
 }

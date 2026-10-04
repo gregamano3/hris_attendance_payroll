@@ -3,6 +3,8 @@
 namespace App\Features\Attendance\Compute;
 
 use App\Features\Attendance\Enums\AttendanceStatus;
+use App\Features\Attendance\Enums\HolidayType;
+use App\Features\Attendance\Models\Shift;
 use Illuminate\Support\Carbon;
 
 /**
@@ -22,6 +24,10 @@ use Illuminate\Support\Carbon;
  *  - Night differential: paid minutes between 22:00 and 06:00.
  *  - Half-day leave: the morning (am) or afternoon (pm) half of the shift is
  *    on leave; the other half follows the normal rules.
+ *  - Flexible shifts: late only after the core start, worked = time present
+ *    minus break capped at the required minutes; short hours are undertime.
+ *  - Break punches: break time beyond the shift's allowance is overbreak,
+ *    deducted from worked time.
  */
 class AttendanceCalculator
 {
@@ -48,6 +54,7 @@ class AttendanceCalculator
         $start = $shift->startsAt($input->date);
         $end = $shift->endsAt($input->date);
         $scheduled = $shift->scheduledMinutes();
+        $overbreak = $this->overbreak($input->breakOuts, $input->breakIns, $shift->break_minutes);
         $halfDay = $input->halfDayLeave !== null && $input->leaveRequestId !== null && ! $isRestDay;
         $leaveFraction = match (true) {
             $input->leaveRequestId === null || $isRestDay => 0.0,
@@ -92,6 +99,7 @@ class AttendanceCalculator
         if ($isRestDay || $input->holiday !== null) {
             $span = $this->minutesBetween($timeIn, $timeOut);
             $paid = max(0, $span - ($span > $scheduled / 2 ? $shift->break_minutes : 0));
+            $paid = max(0, $paid - $overbreak);
             $worked = min($paid, $scheduled);
             $overtime = $this->capToApproved($this->applyThreshold($paid - $worked), $input);
 
@@ -102,14 +110,19 @@ class AttendanceCalculator
                 timeOut: $timeOut,
                 workedMinutes: $worked,
                 overtimeMinutes: $overtime,
+                overbreakMinutes: $overbreak,
                 nightDiffMinutes: min($this->nightMinutes($timeIn, $timeOut), $worked + $overtime),
             );
+        }
+
+        if ($shift->is_flexible && ! $halfDay) {
+            return $this->flexible($input, $base, $shift, $timeIn, $timeOut, $scheduled, $overbreak);
         }
 
         $lateRaw = $timeIn->gt($start) ? $this->minutesBetween($start, $timeIn) : 0;
         $late = $lateRaw > $shift->grace_minutes ? $lateRaw : 0;
         $undertime = $timeOut->lt($end) ? $this->minutesBetween($timeOut, $end) : 0;
-        $worked = max(0, $scheduled - $late - $undertime);
+        $worked = max(0, $scheduled - $late - $undertime - $overbreak);
         $overtime = $timeOut->gt($end) ? $this->capToApproved($this->applyThreshold($this->minutesBetween($end, $timeOut)), $input) : 0;
 
         $paidStart = $timeIn->gt($start) ? $timeIn : $start;
@@ -125,7 +138,69 @@ class AttendanceCalculator
             undertimeMinutes: $undertime,
             overtimeMinutes: $overtime,
             nightDiffMinutes: min($this->nightMinutes($paidStart, $paidEnd), $worked + $overtime),
+            overbreakMinutes: $overbreak,
         );
+    }
+
+    /**
+     * @param  array{isRestDay: bool, holiday: HolidayType|null, leaveRequestId: int|null, leaveFraction: float}  $base
+     */
+    private function flexible(DayInput $input, array $base, Shift $shift, Carbon $timeIn, Carbon $timeOut, int $required, int $overbreak): DayResult
+    {
+        $coreStart = $shift->core_start ? $input->date->copy()->setTimeFromTimeString($shift->core_start) : null;
+        $coreEnd = $shift->core_end ? $input->date->copy()->setTimeFromTimeString($shift->core_end) : null;
+
+        $lateRaw = $coreStart !== null && $timeIn->gt($coreStart) ? $this->minutesBetween($coreStart, $timeIn) : 0;
+        $late = $lateRaw > $shift->grace_minutes ? $lateRaw : 0;
+
+        $span = $this->minutesBetween($timeIn, $timeOut);
+        $present = max(0, $span - ($span > $required / 2 ? $shift->break_minutes : 0) - $overbreak);
+        $leftEarly = $coreEnd !== null && $timeOut->lt($coreEnd) ? $this->minutesBetween($timeOut, $coreEnd) : 0;
+
+        $worked = min($present, $required);
+        $undertime = max($required - $present, $leftEarly);
+        $overtime = $this->capToApproved($this->applyThreshold($present - $required), $input);
+
+        return new DayResult(
+            ...$base,
+            status: AttendanceStatus::Present,
+            timeIn: $timeIn,
+            timeOut: $timeOut,
+            workedMinutes: $worked,
+            lateMinutes: $late,
+            undertimeMinutes: $undertime,
+            overtimeMinutes: $overtime,
+            nightDiffMinutes: min($this->nightMinutes($timeIn, $timeOut), $worked + $overtime),
+            overbreakMinutes: $overbreak,
+        );
+    }
+
+    /**
+     * Break minutes taken beyond the allowance (breaks paired in order).
+     *
+     * @param  list<Carbon>  $outs
+     * @param  list<Carbon>  $ins
+     */
+    private function overbreak(array $outs, array $ins, int $allowance): int
+    {
+        if ($outs === []) {
+            return 0;
+        }
+
+        $outs = collect($outs)->sort()->values();
+        $ins = collect($ins)->sort()->values();
+        $taken = 0;
+
+        foreach ($outs as $out) {
+            $back = $ins->first(fn (Carbon $in) => $in->gt($out));
+
+            if ($back !== null) {
+                $taken += $this->minutesBetween($out, $back);
+                $ins = $ins->reject(fn (Carbon $in) => $in->eq($back))->values();
+            }
+        }
+
+        return max(0, $taken - $allowance);
     }
 
     private function capToApproved(int $minutes, DayInput $input): int
