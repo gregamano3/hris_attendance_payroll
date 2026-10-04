@@ -19,16 +19,28 @@ class EmployeeRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        $this->merge(self::normalize($this->all()));
+    }
+
+    /**
+     * Normalises user input (government IDs and bank account to digits, amounts without commas).
+     * Shared with the CSV import.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    public static function normalize(array $input): array
+    {
         $normalized = [];
 
         foreach (GovernmentId::cases() as $id) {
-            $normalized[$id->value] = GovernmentId::normalize($this->input($id->value));
+            $normalized[$id->value] = GovernmentId::normalize(isset($input[$id->value]) ? (string) $input[$id->value] : null);
         }
 
-        $normalized['basic_rate'] = str_replace(',', '', (string) $this->input('basic_rate'));
-        $normalized['bank_account_no'] = preg_replace('/[\s-]/', '', (string) $this->input('bank_account_no')) ?: null;
+        $normalized['basic_rate'] = str_replace(',', '', (string) ($input['basic_rate'] ?? ''));
+        $normalized['bank_account_no'] = preg_replace('/[\s-]/', '', (string) ($input['bank_account_no'] ?? '')) ?: null;
 
-        $this->merge($normalized);
+        return $normalized;
     }
 
     /**
@@ -36,8 +48,14 @@ class EmployeeRequest extends FormRequest
      */
     public function rules(): array
     {
-        $employee = $this->employee();
+        return self::rulesFor($this->employee(), (string) $this->input('status'));
+    }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public static function rulesFor(?Employee $employee, ?string $status): array
+    {
         $rules = [
             'employee_no' => ['required', 'string', 'max:30', Rule::unique('employees')->ignore($employee)],
             'user_id' => ['nullable', 'integer', Rule::exists('users', 'id'), Rule::unique('employees')->ignore($employee)],
@@ -58,7 +76,7 @@ class EmployeeRequest extends FormRequest
             'hired_at' => ['required', 'date'],
             'regularized_at' => ['nullable', 'date', 'after_or_equal:hired_at'],
             'separated_at' => [
-                Rule::requiredIf(fn () => EmploymentStatus::tryFrom((string) $this->input('status'))?->isSeparated() ?? false),
+                Rule::requiredIf(fn () => EmploymentStatus::tryFrom((string) $status)?->isSeparated() ?? false),
                 'nullable', 'date', 'after_or_equal:hired_at',
             ],
             'rate_type' => ['required', Rule::enum(RateType::class)],
@@ -88,6 +106,14 @@ class EmployeeRequest extends FormRequest
      * @return array<string, string>
      */
     public function attributes(): array
+    {
+        return self::attributeNames();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function attributeNames(): array
     {
         $attributes = [
             'user_id' => 'linked user',
