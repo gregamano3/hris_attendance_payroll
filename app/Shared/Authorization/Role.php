@@ -45,6 +45,8 @@ enum Role: string
                 Permission::OvertimeRequest,
                 Permission::OvertimeApprove,
                 Permission::PayslipsViewOwn,
+                Permission::RecruitmentManage,
+                Permission::PerformanceManage,
             ],
             self::Payroll => [
                 Permission::DashboardView,

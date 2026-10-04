@@ -43,6 +43,8 @@ return [
         // retention period that applies to you (e.g. BIR books of accounts).
         'retention_years' => (int) env('PRIVACY_RETENTION_YEARS', 10),
         'dpo_email' => env('PRIVACY_DPO_EMAIL', ''),
+        // Months after rejection before applicant data and résumés are deleted.
+        'applicant_retention_months' => (int) env('PRIVACY_APPLICANT_RETENTION_MONTHS', 12),
     ],
 
     'security' => [

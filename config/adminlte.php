@@ -834,6 +834,21 @@ return [
             'icon' => 'bi bi-pie-chart',
             'can' => 'employees.manage',
         ],
+        ['header' => 'TALENT', 'can' => 'recruitment.manage'],
+        [
+            'text' => 'Job openings',
+            'route' => 'recruitment.openings.index',
+            'icon' => 'bi bi-megaphone',
+            'can' => 'recruitment.manage',
+            'active' => ['recruitment/openings*', 'recruitment/applicants*'],
+        ],
+        [
+            'text' => 'Onboarding',
+            'route' => 'recruitment.onboarding.index',
+            'icon' => 'bi bi-list-check',
+            'can' => 'recruitment.manage',
+            'active' => ['recruitment/onboarding*'],
+        ],
         ['header' => 'ATTENDANCE'],
         [
             'text' => 'Time clock',
