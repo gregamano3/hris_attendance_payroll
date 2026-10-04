@@ -1,5 +1,6 @@
 <?php
 
+use App\Shared\TwoFactor\RequireTwoFactor;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Invalidates other sessions when a user changes their password.
         $middleware->appendToGroup('web', AuthenticateSession::class);
+        $middleware->appendToGroup('web', RequireTwoFactor::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

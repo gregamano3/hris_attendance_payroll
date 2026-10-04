@@ -21,6 +21,10 @@ return [
     // additionally limited to 5 per account).
     'login_throttle_per_minute' => (int) (env('LOGIN_THROTTLE') ?: 10),
 
+    // Comma separated roles that must enable two-factor authentication,
+    // e.g. "admin,payroll". Leave empty to keep 2FA optional for everyone.
+    'require_two_factor_roles' => env('REQUIRE_2FA_ROLES', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Attendance rules
