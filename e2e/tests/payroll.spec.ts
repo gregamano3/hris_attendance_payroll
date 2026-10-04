@@ -14,10 +14,10 @@ test.describe('payroll', () => {
     await form.getByRole('button', { name: 'Create run' }).click();
     await expect(page.locator('.alert-success')).toContainText('Payroll run created');
 
+    // Computation runs on the queue; the page polls and reloads when it is done.
     await page.locator('#compute-button').click();
-    await expect(page.locator('.alert-success')).toContainText(/Computed \d+ payslip/);
-    await expect(page.locator('#payslips-table tbody tr')).not.toHaveCount(0);
-    await expect(page.locator('#payslips-table')).toContainText('Dela Cruz, Juan');
+    await expect(page.locator('#payslips-table')).toContainText('Dela Cruz, Juan', { timeout: 60_000 });
+    await expect(page.locator('#finalize-button')).toBeVisible();
 
     // Register export
     const download = page.waitForEvent('download');

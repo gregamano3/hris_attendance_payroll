@@ -73,6 +73,8 @@ class ComputeThirteenthMonthRun
 
             $run->update([
                 'status' => PayrollRunStatus::Computed,
+                'progress' => 100,
+                'compute_error' => null,
                 'computed_at' => now(),
                 'employee_count' => $payslips->count(),
                 'total_gross' => $sum('gross_pay'),

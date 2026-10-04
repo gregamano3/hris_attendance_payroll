@@ -50,8 +50,14 @@ class ComputePayrollRun
 
         DB::transaction(function () use ($run, $period, $calculator, $adjustments, $recurring, $loans, $employees) {
             $run->payslips()->delete();
+            $total = max(1, $employees->count());
 
-            foreach ($employees as $employee) {
+            foreach ($employees->values() as $index => $employee) {
+                // Progress is written outside the transaction so the UI can see it.
+                if ($index % 10 === 0) {
+                    $this->reportProgress($run, (int) floor($index / $total * 100));
+                }
+
                 $days = $this->attendance->days($employee->id, $period)
                     ->filter(fn (AttendanceDay $day) => $day->date->gte($employee->hired_at)
                         && ($employee->separated_at === null || $day->date->lte($employee->separated_at)));
@@ -75,6 +81,8 @@ class ComputePayrollRun
 
             $run->update([
                 'status' => PayrollRunStatus::Computed,
+                'progress' => 100,
+                'compute_error' => null,
                 'computed_at' => now(),
                 'employee_count' => $payslips->count(),
                 'total_gross' => $this->total($payslips, 'gross_pay'),
@@ -85,6 +93,19 @@ class ComputePayrollRun
         });
 
         return $run->refresh();
+    }
+
+    /**
+     * Writes progress on a separate connection so it is visible to the UI
+     * while the computation transaction is still open.
+     */
+    private function reportProgress(PayrollRun $run, int $percent): void
+    {
+        if (config('database.connections.progress') === null) {
+            config(['database.connections.progress' => config('database.connections.'.config('database.default'))]);
+        }
+
+        DB::connection('progress')->table('payroll_runs')->where('id', $run->id)->update(['progress' => $percent]);
     }
 
     /**
