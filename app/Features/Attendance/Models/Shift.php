@@ -2,6 +2,7 @@
 
 namespace App\Features\Attendance\Models;
 
+use App\Shared\Audit\Auditable;
 use Database\Factories\ShiftFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -24,6 +25,8 @@ use Illuminate\Support\Carbon;
 #[UseFactory(ShiftFactory::class)]
 class Shift extends Model
 {
+    use Auditable;
+
     /** @use HasFactory<ShiftFactory> */
     use HasFactory;
 

@@ -3,6 +3,7 @@
 namespace App\Features\Attendance\Models;
 
 use App\Features\Employees\Models\Employee;
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['employee_id', 'shift_id', 'effective_from'])]
 class EmployeeShift extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, string>
      */

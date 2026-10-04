@@ -3,6 +3,7 @@
 namespace App\Features\Attendance\Models;
 
 use App\Features\Attendance\Enums\HolidayType;
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['date', 'name', 'type'])]
 class Holiday extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

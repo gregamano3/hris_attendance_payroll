@@ -5,6 +5,7 @@ namespace App\Features\Attendance\Models;
 use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Employees\Models\Employee;
 use App\Models\User;
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['employee_id', 'leave_type_id', 'start_date', 'end_date', 'day_part', 'days', 'reason', 'status', 'reviewed_by', 'reviewed_at', 'review_remarks'])]
 class LeaveRequest extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

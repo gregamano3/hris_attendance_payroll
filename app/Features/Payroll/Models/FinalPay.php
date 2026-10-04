@@ -5,6 +5,7 @@ namespace App\Features\Payroll\Models;
 use App\Features\Employees\Models\Employee;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Models\User;
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -35,6 +36,8 @@ use Illuminate\Support\Carbon;
 ])]
 class FinalPay extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */

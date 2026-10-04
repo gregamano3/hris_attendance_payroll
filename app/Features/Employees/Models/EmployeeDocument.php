@@ -4,6 +4,7 @@ namespace App\Features\Employees\Models;
 
 use App\Features\Employees\Enums\DocumentCategory;
 use App\Models\User;
+use App\Shared\Audit\Auditable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,8 @@ use Illuminate\Support\Facades\Storage;
 #[Fillable(['employee_id', 'category', 'title', 'path', 'original_name', 'mime_type', 'size', 'uploaded_by'])]
 class EmployeeDocument extends Model
 {
+    use Auditable;
+
     public const DISK = 'local';
 
     protected static function booted(): void

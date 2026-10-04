@@ -2,6 +2,7 @@
 
 namespace App\Features\Payroll\Models;
 
+use App\Shared\Audit\Auditable;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['final_pay_id', 'kind', 'label', 'amount', 'taxable'])]
 class FinalPayAdjustment extends Model
 {
+    use Auditable;
+
     /**
      * @return array<string, mixed>
      */
