@@ -67,3 +67,21 @@ it('computes semi-monthly withholding tax per the TRAIN table', function (string
     'top bracket' => ['400000', '115104.15'],
     'zero' => ['0', '0.00'],
 ]);
+
+it('computes annual income tax per the TRAIN table', function (string $taxable, string $tax) {
+    $brackets = array_map(fn (array $b) => [
+        'lower' => Money::ofPesos($b[0]),
+        'upper' => $b[1] === null ? null : Money::ofPesos($b[1]),
+        'base' => Money::ofPesos($b[2]),
+        'rate' => $b[3],
+    ], PayrollSeeder::TAX_ANNUAL_2023);
+
+    expect((new WithholdingTaxCalculator($brackets))->compute(Money::ofPesos($taxable))->toDecimal())->toBe($tax);
+})->with([
+    'exempt' => ['250000', '0.00'],
+    'second' => ['300000', '7500.00'],
+    'third' => ['500000', '42500.00'],
+    'fourth' => ['1000000', '152500.00'],
+    'fifth' => ['3000000', '702500.00'],
+    'top' => ['10000000', '2902500.00'],
+]);
