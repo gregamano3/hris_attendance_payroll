@@ -839,7 +839,7 @@ return [
             'text' => 'Leave approvals',
             'route' => 'leaves.review',
             'icon' => 'bi bi-check2-square',
-            'can' => 'leaves.approve',
+            'can' => 'review-leaves',
         ],
         [
             'text' => 'My overtime',
@@ -851,7 +851,7 @@ return [
             'text' => 'Overtime approvals',
             'route' => 'overtime.review',
             'icon' => 'bi bi-clipboard-check',
-            'can' => 'overtime.approve',
+            'can' => 'review-overtime',
         ],
         [
             'text' => 'Daily time records',

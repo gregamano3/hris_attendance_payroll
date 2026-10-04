@@ -93,7 +93,7 @@ class LeaveRequestsController
             'status' => LeaveStatus::Pending,
         ]);
 
-        Notification::send(Recipients::withPermission(Permission::LeavesApprove, $request->user()?->id), new RequestSubmitted($leave));
+        Notification::send(Recipients::approversFor($employee, Permission::LeavesApprove, $request->user()?->id), new RequestSubmitted($leave));
 
         return back()->with('success', "Leave request for {$days} day(s) submitted.");
     }

@@ -6,6 +6,7 @@ use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Models\AttendanceDay;
 use App\Features\Attendance\Models\OvertimeRequest;
 use App\Features\Attendance\Notifications\RequestReviewed;
+use App\Features\Employees\Queries\EmployeeDirectory;
 use App\Shared\Notifications\Recipients;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class ReviewOvertimeController
 {
+    public function __construct(private EmployeeDirectory $directory) {}
+
     public function index(Request $request): View
     {
         $status = LeaveStatus::tryFrom($request->string('status')->toString()) ?? LeaveStatus::Pending;
@@ -21,6 +24,7 @@ class ReviewOvertimeController
         $requests = OvertimeRequest::query()
             ->with(['employee', 'reviewer'])
             ->where('status', $status)
+            ->when(! $request->user()?->can('overtime.approve'), fn ($q) => $q->whereIn('employee_id', $this->directory->teamIdsOf($request->user())))
             ->orderBy('date')
             ->paginate(20)
             ->withQueryString();
@@ -41,6 +45,8 @@ class ReviewOvertimeController
             'decision' => ['required', Rule::in([LeaveStatus::Approved->value, LeaveStatus::Rejected->value])],
             'review_remarks' => ['nullable', 'string', 'max:255'],
         ]);
+
+        abort_unless($request->user()?->can('overtime.approve') || $this->directory->teamIdsOf($request->user())->contains($overtimeRequest->employee_id), 403);
 
         if ($overtimeRequest->status !== LeaveStatus::Pending) {
             return back()->with('error', 'This request was already reviewed.');

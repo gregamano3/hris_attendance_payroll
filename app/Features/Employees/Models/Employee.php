@@ -45,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $address
  * @property int|null $department_id
  * @property int|null $position_id
+ * @property int|null $supervisor_id
  * @property EmploymentType $employment_type
  * @property EmploymentStatus $status
  * @property Carbon $hired_at
@@ -64,10 +65,11 @@ use Illuminate\Support\Carbon;
  * @property-read Department|null $department
  * @property-read Position|null $position
  * @property-read User|null $user
+ * @property-read Employee|null $supervisor
  */
 #[Fillable([
     'employee_no', 'user_id', 'first_name', 'middle_name', 'last_name', 'suffix', 'birth_date', 'gender',
-    'civil_status', 'email', 'mobile', 'address', 'department_id', 'position_id', 'employment_type', 'status',
+    'civil_status', 'email', 'mobile', 'address', 'department_id', 'position_id', 'supervisor_id', 'employment_type', 'status',
     'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'basic_rate', 'is_minimum_wage_earner', 'sss_no', 'philhealth_no',
     'pagibig_no', 'tin', 'bank_name', 'bank_account_name', 'bank_account_no',
 ])]
@@ -150,6 +152,22 @@ class Employee extends Model
     public static function findByGovernmentId(GovernmentId $id, string $value): ?self
     {
         return static::withTrashed()->where($id->blindIndexColumn(), BlindIndex::hash($id->value, GovernmentId::normalize($value)))->first();
+    }
+
+    /**
+     * @return BelongsTo<Employee, $this>
+     */
+    public function supervisor(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'supervisor_id');
+    }
+
+    /**
+     * @return HasMany<Employee, $this>
+     */
+    public function directReports(): HasMany
+    {
+        return $this->hasMany(self::class, 'supervisor_id');
     }
 
     /**

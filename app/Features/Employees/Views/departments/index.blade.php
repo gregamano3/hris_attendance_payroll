@@ -11,13 +11,14 @@
         <div class="card-body p-0 table-responsive">
             <table class="table table-hover table-striped mb-0">
                 <thead>
-                    <tr><th>Code</th><th>Name</th><th class="text-end">Positions</th><th class="text-end">Employees</th><th class="actions"></th></tr>
+                    <tr><th>Code</th><th>Name</th><th>Head</th><th class="text-end">Positions</th><th class="text-end">Employees</th><th class="actions"></th></tr>
                 </thead>
                 <tbody>
                     @forelse ($departments as $department)
                         <tr>
                             <td><span class="badge text-bg-light border">{{ $department->code }}</span></td>
                             <td>{{ $department->name }}</td>
+                            <td>{{ $department->head?->full_name ?? '—' }}</td>
                             <td class="text-end">{{ $department->positions_count }}</td>
                             <td class="text-end">{{ $department->employees_count }}</td>
                             <td class="actions">
@@ -26,7 +27,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-body-secondary py-4">No departments yet.</td></tr>
+                        <tr><td colspan="6" class="text-center text-body-secondary py-4">No departments yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>

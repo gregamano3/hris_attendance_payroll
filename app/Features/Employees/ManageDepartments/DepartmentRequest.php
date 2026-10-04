@@ -24,6 +24,7 @@ class DepartmentRequest extends FormRequest
         return [
             'code' => ['required', 'string', 'max:20', 'alpha_dash', Rule::unique('departments')->ignore($department)],
             'name' => ['required', 'string', 'max:255', Rule::unique('departments')->ignore($department)],
+            'head_employee_id' => ['nullable', 'integer', Rule::exists('employees', 'id')],
             'description' => ['nullable', 'string', 'max:2000'],
         ];
     }

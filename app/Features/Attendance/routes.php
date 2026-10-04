@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
             Route::patch('{leaveRequest}/cancel', [LeaveRequestsController::class, 'cancel'])->name('cancel');
         });
 
-        Route::middleware('can:leaves.approve')->group(function () {
+        Route::middleware('can:review-leaves')->group(function () {
             Route::get('review', [ReviewLeavesController::class, 'index'])->name('review');
             Route::patch('{leaveRequest}/review', [ReviewLeavesController::class, 'update'])->name('review.update');
         });
@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
             Route::patch('{overtimeRequest}/cancel', [OvertimeRequestsController::class, 'cancel'])->name('cancel');
         });
 
-        Route::middleware('can:overtime.approve')->group(function () {
+        Route::middleware('can:review-overtime')->group(function () {
             Route::get('review', [ReviewOvertimeController::class, 'index'])->name('review');
             Route::patch('{overtimeRequest}/review', [ReviewOvertimeController::class, 'update'])->name('review.update');
         });

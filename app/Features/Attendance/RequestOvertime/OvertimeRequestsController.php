@@ -58,7 +58,7 @@ class OvertimeRequestsController
             'status' => LeaveStatus::Pending,
         ]);
 
-        Notification::send(Recipients::withPermission(Permission::OvertimeApprove, $request->user()?->id), new RequestSubmitted($overtime));
+        Notification::send(Recipients::approversFor($employee, Permission::OvertimeApprove, $request->user()?->id), new RequestSubmitted($overtime));
 
         return back()->with('success', 'Overtime request submitted.');
     }
