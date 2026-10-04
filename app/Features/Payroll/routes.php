@@ -2,6 +2,7 @@
 
 use App\Features\Payroll\ComputeBackPay\BackPayController;
 use App\Features\Payroll\CreatePayrollRun\CreatePayrollRunController;
+use App\Features\Payroll\EFiling\EFilingController;
 use App\Features\Payroll\ExportBankFile\ExportBankFileController;
 use App\Features\Payroll\ExportRegister\ExportRegisterController;
 use App\Features\Payroll\ListPayrollRuns\ListPayrollRunsController;
@@ -60,7 +61,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('runs/{run}', ShowPayrollRunController::class)->name('runs.show');
         Route::get('runs/{run}/status', [ProcessPayrollRunController::class, 'status'])->name('runs.status');
         Route::get('runs/{run}/register.csv', ExportRegisterController::class)->name('runs.register');
-        Route::get('runs/{run}/bank.{format}', ExportBankFileController::class)->whereIn('format', ['csv', 'txt'])->name('runs.bank');
+        Route::get('runs/{run}/bank.{format}', ExportBankFileController::class)->where('format', '[a-z]+')->name('runs.bank');
         Route::get('allowances', [RecurringEarningsController::class, 'index'])->name('allowances.index');
         Route::get('loans', [LoansController::class, 'index'])->name('loans.index');
         Route::get('loans/{loan}', [LoansController::class, 'show'])->name('loans.show');
@@ -69,6 +70,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('final-pay/{finalPay}/pdf', [FinalPayController::class, 'pdf'])->name('final-pay.pdf');
         Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
         Route::get('reports/alphalist.csv', [ReportsController::class, 'alphalist'])->name('reports.alphalist');
+        Route::get('reports/efile/{format}', EFilingController::class)->name('reports.efile');
         Route::get('reports/{agency}.csv', [ReportsController::class, 'contributions'])->name('reports.contributions');
     });
 
