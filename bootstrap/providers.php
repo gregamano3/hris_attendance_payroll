@@ -11,9 +11,11 @@ use App\Features\Payroll\PayrollServiceProvider;
 use App\Features\Security\SecurityServiceProvider;
 use App\Features\Users\UsersServiceProvider;
 use App\Providers\AppServiceProvider;
+use App\Providers\HorizonServiceProvider;
 
 return [
     AppServiceProvider::class,
+    HorizonServiceProvider::class,
 
     // Feature slices
     AccountServiceProvider::class,

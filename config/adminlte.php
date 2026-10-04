@@ -941,6 +941,13 @@ return [
             'active' => ['users*'],
         ],
         [
+            'text' => 'Queue monitor',
+            'url' => 'horizon',
+            'icon' => 'bi bi-activity',
+            'can' => 'viewHorizon',
+            'target' => '_blank',
+        ],
+        [
             'text' => 'Audit log',
             'route' => 'audit-log',
             'icon' => 'bi bi-journal-text',

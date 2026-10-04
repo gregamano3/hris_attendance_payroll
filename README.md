@@ -119,6 +119,10 @@ make e2e     # Playwright end-to-end tests
 volume, reseeds it and runs the suite in `e2e/`, so your development data is never touched. Stop it with
 `make e2e-down`. The same suite runs in GitHub Actions (`.github/workflows/e2e.yml`), which uploads an HTML report.
 
+## Deployment
+
+See [docs/deployment.md](docs/deployment.md) for the production stack (Caddy with automatic HTTPS, Horizon, scheduler, backups).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Please read our [Code of Conduct](CODE_OF_CONDUCT.md)

@@ -82,7 +82,9 @@ jobs:
         with:
           context: .
           file: docker/php/Dockerfile
-          target: prod
+          target: web
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Validate the production compose file
+        run: cp .env.production.example .env.production && DB_PASSWORD=x REDIS_PASSWORD=x docker compose -f compose.prod.yaml config --quiet

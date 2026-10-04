@@ -20,6 +20,8 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-app.ini
+COPY docker/php/fpm.conf /usr/local/etc/php-fpm.d/zz-app.conf
+ENV PHP_FPM_MAX_CHILDREN=20
 
 WORKDIR /var/www/html
 
@@ -66,3 +68,11 @@ USER www-data
 HEALTHCHECK --interval=30s --timeout=3s CMD SCRIPT_NAME=/ping SCRIPT_FILENAME=/ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
 
 CMD ["sh", "-c", "php artisan optimize && php-fpm"]
+
+############################
+# Web server (Caddy, automatic HTTPS) serving the public assets
+############################
+FROM caddy:2-alpine AS web
+
+COPY docker/caddy/Caddyfile /etc/caddy/Caddyfile
+COPY --from=prod /var/www/html/public /var/www/html/public
