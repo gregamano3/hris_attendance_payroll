@@ -23,6 +23,15 @@
                     <x-form.input name="pay_date" label="Pay date" type="date" :value="$payDate->toDateString()" col="col-md-4" required />
                     <x-form.textarea name="notes" label="Notes" />
                     <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="annualize_tax" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="annualize_tax" name="annualize_tax" value="1"
+                                @checked(old('annualize_tax', $period->to->month === 12 && $period->to->day === 31))>
+                            <label class="form-check-label" for="annualize_tax">Year-end tax annualization (last payroll of the year)</label>
+                        </div>
+                        <div class="form-text">Withholds the balance of each employee's annual tax due, or refunds over-withheld tax, based on all finalized payroll of the year.</div>
+                    </div>
+                    <div class="col-12">
                         <div class="callout callout-info mb-0 small">
                             Contributions are deducted at {{ config('hris.payroll.contribution_fraction') * 100 }}% of the monthly amount per run and
                             withholding tax uses the {{ str_replace('_', '-', config('hris.payroll.tax_frequency')) }} table, which suits semi-monthly runs.

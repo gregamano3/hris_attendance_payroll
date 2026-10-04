@@ -37,7 +37,9 @@ class CreatePayrollRunController
             'period_end' => ['required', 'date', 'after_or_equal:period_start', 'before_or_equal:'.Carbon::parse((string) $request->input('period_start'))->addDays(31)->toDateString()],
             'pay_date' => ['required', 'date', 'after_or_equal:period_start'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'annualize_tax' => ['boolean'],
         ]);
+        $data['annualize_tax'] = $request->boolean('annualize_tax');
 
         $overlap = PayrollRun::query()
             ->where('type', PayrollRunType::Regular)

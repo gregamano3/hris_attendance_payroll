@@ -14,6 +14,7 @@ use App\Features\Payroll\Models\PayrollAdjustment;
 use App\Features\Payroll\Models\PayrollRun;
 use App\Features\Payroll\Models\Payslip;
 use App\Features\Payroll\Models\RecurringEarning;
+use App\Features\Payroll\Queries\AnnualCompensation;
 use App\Features\Payroll\Queries\StatutoryRates;
 use App\Shared\Money\Money;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,7 +31,11 @@ class ComputePayrollRun
         private AttendanceSummary $attendance,
         private StatutoryRates $rates,
         private CompensationHistory $compensation,
+        private AnnualCompensation $annual,
     ) {}
+
+    /** @var Collection<int, array<string, mixed>>|null */
+    private ?Collection $yearToDate = null;
 
     public function handle(PayrollRun $run): PayrollRun
     {
@@ -49,6 +54,10 @@ class ComputePayrollRun
             ->groupBy('employee_id');
 
         $employees = $this->eligibleEmployees($run);
+        // Year-to-date figures from finalized payslips (this run isn't finalized yet).
+        $this->yearToDate = $run->annualize_tax
+            ? $this->annual->forYear($run->period_end->year)->keyBy(fn (array $row): int => (int) $row['employee']->id)
+            : null;
 
         DB::transaction(function () use ($run, $calculator, $adjustments, $recurring, $loans, $employees) {
             $run->payslips()->delete();
@@ -117,6 +126,10 @@ class ComputePayrollRun
             rateSegments: array_map(fn (array $s) => ['from' => $s['from'], 'rate' => $s['rate']], $segments),
             periodFrom: $period->from->toDateString(),
             periodTo: $period->to->toDateString(),
+            annualization: $this->yearToDate === null ? null : [
+                'taxable_to_date' => $this->yearToDate->get($employee->id)['taxable'] ?? Money::zero(),
+                'withheld_to_date' => $this->yearToDate->get($employee->id)['tax_withheld'] ?? Money::zero(),
+            ],
         );
     }
 

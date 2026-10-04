@@ -82,6 +82,7 @@ class StatutoryRates
             overtimeRegular: (float) $config['overtime_regular'],
             overtimePremium: (float) $config['overtime_premium'],
             nightDifferential: (float) $config['night_differential'],
+            annualTax: rescue(fn () => new WithholdingTaxCalculator($this->taxBrackets('annual', $date)), null, false),
         );
     }
 
