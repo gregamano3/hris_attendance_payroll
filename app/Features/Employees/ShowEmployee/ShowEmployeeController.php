@@ -9,7 +9,7 @@ class ShowEmployeeController
 {
     public function __invoke(Employee $employee): View
     {
-        $employee->load(['department', 'position', 'user']);
+        $employee->load(['department', 'position', 'user', 'documents']);
 
         return view('employees::employees.show', compact('employee'));
     }

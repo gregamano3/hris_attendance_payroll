@@ -12,4 +12,5 @@
 
 @section('page')
     @include('employees::employees._details', ['showUser' => true])
+    @include('employees::employees._documents', ['canManage' => auth()->user()->can('employees.manage')])
 @stop

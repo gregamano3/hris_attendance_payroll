@@ -4,6 +4,7 @@
 
 @section('page_actions')
     @can('employees.manage')
+        <a href="{{ route('employees.import.create') }}" class="btn btn-outline-primary"><i class="bi bi-upload me-1"></i> Import</a>
         <a href="{{ route('employees.create') }}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> New employee</a>
     @endcan
 @stop

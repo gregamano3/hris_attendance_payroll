@@ -11,7 +11,7 @@ class ShowMyProfileController
     public function __invoke(Request $request, EmployeeDirectory $directory): View
     {
         $employee = $directory->forUser($request->user());
-        $employee?->load(['department', 'position']);
+        $employee?->load(['department', 'position', 'documents']);
 
         return view('employees::my-profile', compact('employee'));
     }
