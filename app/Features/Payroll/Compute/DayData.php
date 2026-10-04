@@ -33,6 +33,7 @@ final readonly class DayData
         public bool $paidLeave = false,
         public float $leaveFraction = 0.0, // 0.5 for a half-day leave
         public bool $holidayPayEligible = true,
+        public int $nightDiffOvertimeMinutes = 0, // part of nightDiffMinutes worked as overtime
     ) {}
 
     /**

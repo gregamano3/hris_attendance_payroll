@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\ManageRecurringEarnings;
 
 use App\Features\Payroll\Enums\TaxTreatment;
+use App\Features\Payroll\Models\DeMinimisBenefit;
 use App\Features\Payroll\Models\RecurringEarning;
 use App\Features\Payroll\Queries\EmployeeOptions;
 use Illuminate\Http\RedirectResponse;
@@ -29,6 +30,9 @@ class RecurringEarningsController
             'employees' => $employees->active(),
             'employeeId' => $employeeId,
             'treatments' => TaxTreatment::options(),
+            'benefits' => DeMinimisBenefit::query()->orderBy('name')->get()->mapWithKeys(fn (DeMinimisBenefit $b): array => [
+                $b->id => "{$b->name} (₱".number_format($b->limit_amount->toFloat(), 2).' / '.($b->period === 'monthly' ? 'month' : 'year').')',
+            ])->all(),
         ]);
     }
 
@@ -39,9 +43,14 @@ class RecurringEarningsController
             'label' => ['required', 'string', 'max:100'],
             'amount' => ['required', 'numeric', 'gt:0', 'max:9999999'],
             'tax_treatment' => ['required', Rule::enum(TaxTreatment::class)],
+            'de_minimis_benefit_id' => ['nullable', 'required_if:tax_treatment,de_minimis', 'integer', Rule::exists('de_minimis_benefits', 'id')],
             'starts_on' => ['required', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
         ]);
+
+        if ($data['tax_treatment'] !== TaxTreatment::DeMinimis->value) {
+            $data['de_minimis_benefit_id'] = null;
+        }
 
         RecurringEarning::query()->create($data);
 

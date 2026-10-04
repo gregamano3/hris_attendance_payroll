@@ -18,6 +18,7 @@
                 @csrf
                 <input type="hidden" name="type" value="regular">
                 <div class="card-body row g-3">
+                    <x-form.select name="frequency" label="Frequency" :options="$frequencies" value="semi_monthly" col="col-md-12" />
                     <x-form.input name="period_start" label="Period start" type="date" :value="$period->from->toDateString()" col="col-md-4" required />
                     <x-form.input name="period_end" label="Period end" type="date" :value="$period->to->toDateString()" col="col-md-4" required />
                     <x-form.input name="pay_date" label="Pay date" type="date" :value="$payDate->toDateString()" col="col-md-4" required />

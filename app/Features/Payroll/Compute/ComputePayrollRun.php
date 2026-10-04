@@ -9,10 +9,13 @@ use App\Features\Employees\Models\Employee;
 use App\Features\Employees\Queries\CompensationHistory;
 use App\Features\Payroll\Enums\LoanStatus;
 use App\Features\Payroll\Enums\PayrollRunStatus;
+use App\Features\Payroll\Enums\TaxTreatment;
+use App\Features\Payroll\Models\DeMinimisBenefit;
 use App\Features\Payroll\Models\Loan;
 use App\Features\Payroll\Models\PayrollAdjustment;
 use App\Features\Payroll\Models\PayrollRun;
 use App\Features\Payroll\Models\Payslip;
+use App\Features\Payroll\Models\PayslipLine as PayslipLineModel;
 use App\Features\Payroll\Models\RecurringEarning;
 use App\Features\Payroll\Queries\AnnualCompensation;
 use App\Features\Payroll\Queries\StatutoryRates;
@@ -37,14 +40,17 @@ class ComputePayrollRun
     /** @var Collection<int, array<string, mixed>>|null */
     private ?Collection $yearToDate = null;
 
+    private PayrollRun $run;
+
     public function handle(PayrollRun $run): PayrollRun
     {
         abort_if($run->isLocked(), 409, 'Finalized payroll runs cannot be recomputed.');
 
         $period = $run->period();
-        $calculator = $this->rates->calculatorFor($period->to);
+        $calculator = $this->rates->calculatorFor($period->to, $run->frequency);
+        $this->run = $run;
         $adjustments = $run->adjustments()->get()->groupBy('employee_id');
-        $recurring = RecurringEarning::query()->activeDuring($period)->get()->groupBy('employee_id');
+        $recurring = RecurringEarning::query()->with('deMinimisBenefit')->activeDuring($period)->get()->groupBy('employee_id');
         $loans = Loan::query()
             ->where('status', LoanStatus::Active)
             ->whereDate('starts_on', '<=', $period->to)
@@ -102,7 +108,9 @@ class ComputePayrollRun
      */
     public function earningsFor(PayrollRun $run, Employee $employee): PayslipResult
     {
-        return $this->rates->calculatorFor($run->period_end)->compute($this->inputFor($run, $employee, []));
+        $this->run = $run;
+
+        return $this->rates->calculatorFor($run->period_end, $run->frequency)->compute($this->inputFor($run, $employee, []));
     }
 
     /**
@@ -155,6 +163,7 @@ class ComputePayrollRun
     {
         return Employee::query()
             ->with(['department', 'position', 'branch', 'costCenter'])
+            ->where('pay_frequency', $run->frequency->value)
             ->whereDate('hired_at', '<=', $run->period_end)
             ->where(fn (Builder $q) => $q->whereNull('separated_at')->orWhereDate('separated_at', '>=', $run->period_start))
             ->orderBy('last_name')
@@ -177,6 +186,7 @@ class ComputePayrollRun
             paidLeave: (bool) $day->leaveRequest?->leaveType->is_paid,
             leaveFraction: (float) $day->leave_fraction,
             holidayPayEligible: $day->holiday_pay_eligible ?? true,
+            nightDiffOvertimeMinutes: $day->night_diff_ot_minutes,
         );
     }
 
@@ -201,12 +211,54 @@ class ComputePayrollRun
      */
     private function recurringFor(Collection $earnings): array
     {
-        return $earnings->map(fn (RecurringEarning $e) => [
-            'kind' => PayslipLine::EARNING,
-            'label' => $e->label,
-            'amount' => $e->amount,
-            'taxable' => $e->tax_treatment->isTaxable(),
-        ])->values()->all();
+        $lines = [];
+
+        foreach ($earnings as $earning) {
+            $benefit = $earning->tax_treatment === TaxTreatment::DeMinimis ? $earning->deMinimisBenefit : null;
+
+            if ($benefit === null) {
+                $lines[] = array_filter([
+                    'kind' => PayslipLine::EARNING,
+                    'label' => $earning->label,
+                    'amount' => $earning->amount,
+                    'taxable' => $earning->tax_treatment->isTaxable(),
+                    'code' => $earning->tax_treatment === TaxTreatment::Hazard ? 'HAZARD' : null,
+                ], fn ($v) => $v !== null);
+
+                continue;
+            }
+
+            // De minimis: exempt up to the ceiling, the excess is taxable.
+            $exempt = $earning->amount->min($this->deMinimisRoom($earning->employee_id, $benefit));
+            $lines[] = ['kind' => PayslipLine::EARNING, 'code' => $benefit->lineCode(), 'label' => $earning->label, 'amount' => $exempt, 'taxable' => false];
+
+            if ($earning->amount->isGreaterThan($exempt)) {
+                $lines[] = ['kind' => PayslipLine::EARNING, 'label' => "{$earning->label} (above de minimis ceiling)", 'amount' => $earning->amount->minus($exempt), 'taxable' => true];
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Remaining tax-exempt amount of a de minimis benefit for this run.
+     */
+    private function deMinimisRoom(int $employeeId, DeMinimisBenefit $benefit): Money
+    {
+        if ($benefit->period === 'monthly') {
+            return $benefit->limit_amount->multipliedBy($this->run->frequency->monthlyShare());
+        }
+
+        $used = (int) PayslipLineModel::query()
+            ->join('payslips', 'payslips.id', '=', 'payslip_lines.payslip_id')
+            ->join('payroll_runs', 'payroll_runs.id', '=', 'payslips.payroll_run_id')
+            ->where('payslips.employee_id', $employeeId)
+            ->where('payroll_runs.status', PayrollRunStatus::Finalized)
+            ->whereYear('payroll_runs.period_end', $this->run->period_end->year)
+            ->where('payslip_lines.code', $benefit->lineCode())
+            ->sum('payslip_lines.amount');
+
+        return $benefit->limit_amount->minus(Money::ofCentavos($used))->max(Money::zero());
     }
 
     /**

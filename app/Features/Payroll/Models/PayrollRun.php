@@ -2,6 +2,7 @@
 
 namespace App\Features\Payroll\Models;
 
+use App\Features\Payroll\Enums\PayFrequency;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Enums\PayrollRunType;
 use App\Models\User;
@@ -20,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property PayrollRunType $type
  * @property bool $annualize_tax
+ * @property PayFrequency $frequency
  * @property Carbon $period_start
  * @property Carbon $period_end
  * @property Carbon $pay_date
@@ -39,7 +41,7 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $finalizer
  */
 #[Fillable([
-    'name', 'type', 'annualize_tax', 'period_start', 'period_end', 'pay_date', 'status', 'progress', 'compute_error', 'employee_count', 'total_gross', 'total_deductions',
+    'name', 'type', 'annualize_tax', 'frequency', 'period_start', 'period_end', 'pay_date', 'status', 'progress', 'compute_error', 'employee_count', 'total_gross', 'total_deductions',
     'total_net', 'total_employer', 'notes', 'created_by', 'computed_at', 'finalized_by', 'finalized_at',
 ])]
 class PayrollRun extends Model
@@ -58,6 +60,7 @@ class PayrollRun extends Model
             'status' => PayrollRunStatus::class,
             'type' => PayrollRunType::class,
             'annualize_tax' => 'boolean',
+            'frequency' => PayFrequency::class,
             'total_gross' => MoneyCast::class,
             'total_deductions' => MoneyCast::class,
             'total_net' => MoneyCast::class,

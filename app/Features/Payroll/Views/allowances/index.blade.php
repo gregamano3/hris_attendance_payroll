@@ -66,6 +66,7 @@
                         <x-form.input name="label" label="Description" col="col-12" placeholder="e.g. Rice subsidy" required />
                         <x-form.input name="amount" label="Amount per payroll run (₱)" type="number" step="0.01" min="0" col="col-12" required />
                         <x-form.select name="tax_treatment" label="Tax treatment" :options="$treatments" col="col-12" required />
+                        <x-form.select name="de_minimis_benefit_id" label="De minimis benefit (ceiling)" :options="$benefits" col="col-12" placeholder="— For de minimis only —" />
                         <x-form.input name="starts_on" label="From" type="date" col="col-6" :value="today()->toDateString()" required />
                         <x-form.input name="ends_on" label="Until (optional)" type="date" col="col-6" />
                     </div>

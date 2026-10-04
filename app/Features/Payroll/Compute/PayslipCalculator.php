@@ -98,7 +98,7 @@ class PayslipCalculator
         }
 
         if ($input->minimumWageEarner) {
-            $lines = array_map(fn (PayslipLine $l) => $l->code === 'ALLOWANCE' || $l->kind !== PayslipLine::EARNING ? $l
+            $lines = array_map(fn (PayslipLine $l) => $l->code === 'ALLOWANCE' || str_starts_with($l->code, 'DM_') || $l->kind !== PayslipLine::EARNING ? $l
                 : new PayslipLine($l->kind, $l->code, $l->label, $l->amount, $l->quantity, $l->unit, taxable: false), $lines);
         }
 
@@ -203,7 +203,8 @@ class PayslipCalculator
 
         $premiumMinutes = [];    // day type => worked minutes
         $overtimeMinutes = [];   // day type => OT minutes
-        $nightMinutes = [];      // day type => ND minutes
+        $nightMinutes = [];      // day type => ND minutes on regular hours
+        $nightOvertimeMinutes = []; // day type => ND minutes on overtime
         $regularWorked = 0;
         $tardiness = 0;
         $unpaidDays = 0.0;
@@ -229,7 +230,8 @@ class PayslipCalculator
                     }
 
                     $overtimeMinutes[$type] = ($overtimeMinutes[$type] ?? 0) + $day->overtimeMinutes;
-                    $nightMinutes[$type] = ($nightMinutes[$type] ?? 0) + $day->nightDiffMinutes;
+                    $nightMinutes[$type] = ($nightMinutes[$type] ?? 0) + $day->nightDiffMinutes - $day->nightDiffOvertimeMinutes;
+                    $nightOvertimeMinutes[$type] = ($nightOvertimeMinutes[$type] ?? 0) + $day->nightDiffOvertimeMinutes;
 
                     // Half-day leave: the leave half is paid leave or unpaid absence.
                     if ($day->leaveFraction > 0) {
@@ -345,6 +347,13 @@ class PayslipCalculator
 
         foreach ($nightMinutes as $type => $minutes) {
             $nightPay = $nightPay->plus($forMinutes($minutes, $this->multiplier($type) * $this->nightDifferential));
+            $nightTotal += $minutes;
+        }
+
+        // Night work during overtime: 10% of the overtime hourly rate.
+        foreach ($nightOvertimeMinutes as $type => $minutes) {
+            $otFactor = $type === 'regular' ? $this->overtimeRegular : $this->multiplier($type) * $this->overtimePremium;
+            $nightPay = $nightPay->plus($forMinutes($minutes, $otFactor * $this->nightDifferential));
             $nightTotal += $minutes;
         }
 

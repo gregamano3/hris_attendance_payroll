@@ -72,7 +72,9 @@ locked and its payslips become visible to employees. `PayslipCalculator` is pure
 | Overtime | 125% on ordinary days; day rate × 130% on rest days and holidays |
 | Rest / special day | 130% (150% when a special day falls on a rest day) |
 | Regular holiday | 200% (260% on a rest day) |
-| Night differential | +10% of the applicable hourly rate |
+| Night differential | +10% of the applicable hourly rate (on overtime hours: 10% of the overtime rate) |
+| Frequencies | Semi-monthly (default), monthly or weekly runs per employee pay frequency, each with its own BIR withholding table |
+| De minimis | Allowances linked to a benefit are exempt up to its monthly/annual ceiling; the excess is taxable |
 | SSS / PhilHealth / Pag-IBIG | monthly amount on the monthly-equivalent pay, half deducted per run |
 | Withholding tax | BIR TRAIN semi-monthly table on taxable pay after employee contributions |
 | Recurring allowances | Added to every run between their dates as taxable, de minimis or non-taxable |

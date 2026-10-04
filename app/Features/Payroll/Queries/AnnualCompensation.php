@@ -52,9 +52,9 @@ class AnnualCompensation
 
         $gross = $sum(fn (PayslipLine $l) => $isEarning($l));
         $thirteenthExempt = $sum(fn (PayslipLine $l) => $l->code === 'THIRTEENTH_MONTH');
-        $nonTaxableAllowances = $sum(fn (PayslipLine $l) => $isEarning($l) && $l->code === 'ALLOWANCE' && ! $l->taxable);
+        $nonTaxableAllowances = $sum(fn (PayslipLine $l) => $isEarning($l) && ! $l->taxable && ($l->code === 'ALLOWANCE' || str_starts_with($l->code, 'DM_')));
         $mweExempt = $sum(fn (PayslipLine $l, bool $mwe) => $mwe && $isEarning($l) && ! $l->taxable
-            && ! in_array($l->code, ['ALLOWANCE', 'THIRTEENTH_MONTH'], true));
+            && ! in_array($l->code, ['ALLOWANCE', 'THIRTEENTH_MONTH'], true) && ! str_starts_with($l->code, 'DM_'));
         $contributions = $sum(fn (PayslipLine $l) => in_array($l->code, ['SSS', 'PHILHEALTH', 'PAGIBIG'], true));
         $withheld = $sum(fn (PayslipLine $l) => $l->code === 'TAX');
 

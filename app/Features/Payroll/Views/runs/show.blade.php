@@ -212,6 +212,16 @@
                     <div class="card-footer"><button class="btn btn-primary">Add</button></div>
                 </form>
 
+                <form method="post" action="{{ route('payroll.runs.service-charge', $run) }}" class="card">
+                    @csrf
+                    <div class="card-header"><h3 class="card-title">Service charge distribution</h3></div>
+                    <div class="card-body row g-3">
+                        <p class="small text-body-secondary mb-0">RA 11360: service charges collected are shared equally by the employees of this run (replaces a previous distribution).</p>
+                        <x-form.input name="amount" id="service_charge_amount" label="Total collected (₱)" type="number" step="0.01" min="0" col="col-12" required />
+                    </div>
+                    <div class="card-footer"><button class="btn btn-outline-primary">Distribute</button></div>
+                </form>
+
                 <form method="post" action="{{ route('payroll.runs.back-pay', $run) }}" class="card">
                     @csrf
                     <div class="card-header"><h3 class="card-title">Back pay</h3></div>
