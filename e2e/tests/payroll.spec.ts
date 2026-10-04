@@ -7,10 +7,11 @@ test.describe('payroll', () => {
 
     await login(page, 'payroll');
     await page.goto('/payroll/runs/create');
-    await page.getByLabel('Period start').fill(from);
-    await page.getByLabel('Period end').fill(to);
-    await page.getByLabel('Pay date').fill(to);
-    await page.getByRole('button', { name: 'Create run' }).click();
+    const form = page.locator('#regular');
+    await form.getByLabel('Period start').fill(from);
+    await form.getByLabel('Period end').fill(to);
+    await form.getByLabel('Pay date').fill(to);
+    await form.getByRole('button', { name: 'Create run' }).click();
     await expect(page.locator('.alert-success')).toContainText('Payroll run created');
 
     await page.locator('#compute-button').click();

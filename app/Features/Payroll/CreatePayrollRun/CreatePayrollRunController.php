@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\CreatePayrollRun;
 
 use App\Features\Payroll\Enums\PayrollRunStatus;
+use App\Features\Payroll\Enums\PayrollRunType;
 use App\Features\Payroll\Models\PayrollRun;
 use App\Shared\Period;
 use Illuminate\Http\RedirectResponse;
@@ -15,17 +16,22 @@ class CreatePayrollRunController
 {
     public function create(): View
     {
-        $latest = PayrollRun::query()->latest('period_end')->first();
+        $latest = PayrollRun::query()->where('type', PayrollRunType::Regular)->latest('period_end')->first();
         $period = Period::semiMonthlyContaining($latest ? $latest->period_end->copy()->addDay() : today());
 
         return view('payroll::runs.create', [
             'period' => $period,
             'payDate' => $period->to,
+            'types' => PayrollRunType::options(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        if ($request->input('type') === PayrollRunType::ThirteenthMonth->value) {
+            return $this->storeThirteenthMonth($request);
+        }
+
         $data = $request->validate([
             'period_start' => ['required', 'date'],
             'period_end' => ['required', 'date', 'after_or_equal:period_start', 'before_or_equal:'.Carbon::parse((string) $request->input('period_start'))->addDays(31)->toDateString()],
@@ -34,6 +40,7 @@ class CreatePayrollRunController
         ]);
 
         $overlap = PayrollRun::query()
+            ->where('type', PayrollRunType::Regular)
             ->whereDate('period_start', '<=', $data['period_end'])
             ->whereDate('period_end', '>=', $data['period_start'])
             ->exists();
@@ -47,10 +54,45 @@ class CreatePayrollRunController
         $run = PayrollRun::query()->create([
             ...$data,
             'name' => 'Payroll '.$period->label(),
+            'type' => PayrollRunType::Regular,
             'status' => PayrollRunStatus::Draft,
             'created_by' => $request->user()?->id,
         ]);
 
         return redirect()->route('payroll.runs.show', $run)->with('success', 'Payroll run created. Compute it to generate payslips.');
+    }
+
+    /**
+     * One 13th month run per calendar year, covering January to December.
+     */
+    private function storeThirteenthMonth(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'year' => ['required', 'integer', 'between:2000,2100'],
+            'pay_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $exists = PayrollRun::query()
+            ->where('type', PayrollRunType::ThirteenthMonth)
+            ->whereYear('period_end', $data['year'])
+            ->exists();
+
+        $request->validate(['year' => [Rule::prohibitedIf($exists)]], [
+            'year.prohibited' => 'A 13th month run already exists for this year.',
+        ]);
+
+        $run = PayrollRun::query()->create([
+            'name' => "13th month pay {$data['year']}",
+            'type' => PayrollRunType::ThirteenthMonth,
+            'period_start' => "{$data['year']}-01-01",
+            'period_end' => "{$data['year']}-12-31",
+            'pay_date' => $data['pay_date'],
+            'notes' => $data['notes'] ?? null,
+            'status' => PayrollRunStatus::Draft,
+            'created_by' => $request->user()?->id,
+        ]);
+
+        return redirect()->route('payroll.runs.show', $run)->with('success', '13th month run created. Compute it to generate payslips.');
     }
 }

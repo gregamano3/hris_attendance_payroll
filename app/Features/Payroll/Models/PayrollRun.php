@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\Models;
 
 use App\Features\Payroll\Enums\PayrollRunStatus;
+use App\Features\Payroll\Enums\PayrollRunType;
 use App\Models\User;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
@@ -16,6 +17,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $name
+ * @property PayrollRunType $type
  * @property Carbon $period_start
  * @property Carbon $period_end
  * @property Carbon $pay_date
@@ -33,7 +35,7 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $finalizer
  */
 #[Fillable([
-    'name', 'period_start', 'period_end', 'pay_date', 'status', 'employee_count', 'total_gross', 'total_deductions',
+    'name', 'type', 'period_start', 'period_end', 'pay_date', 'status', 'employee_count', 'total_gross', 'total_deductions',
     'total_net', 'total_employer', 'notes', 'created_by', 'computed_at', 'finalized_by', 'finalized_at',
 ])]
 class PayrollRun extends Model
@@ -48,6 +50,7 @@ class PayrollRun extends Model
             'period_end' => 'date',
             'pay_date' => 'date',
             'status' => PayrollRunStatus::class,
+            'type' => PayrollRunType::class,
             'total_gross' => MoneyCast::class,
             'total_deductions' => MoneyCast::class,
             'total_net' => MoneyCast::class,
@@ -84,6 +87,11 @@ class PayrollRun extends Model
     public function period(): Period
     {
         return new Period($this->period_start, $this->period_end);
+    }
+
+    public function isThirteenthMonth(): bool
+    {
+        return $this->type === PayrollRunType::ThirteenthMonth;
     }
 
     public function isLocked(): bool

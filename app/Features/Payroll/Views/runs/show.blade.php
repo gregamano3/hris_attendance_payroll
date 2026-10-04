@@ -51,6 +51,7 @@
     </div>
 
     <p class="text-body-secondary">
+        <span class="badge text-bg-light border">{{ $run->type->label() }}</span>
         Period {{ $run->period()->label() }} · Pay date {{ $run->pay_date->format('M j, Y') }}
         @if ($run->finalized_at) · Finalized {{ $run->finalized_at->format('M j, Y g:i A') }} by {{ $run->finalizer?->name }} @endif
     </p>
@@ -91,6 +92,7 @@
         </div>
     </div>
 
+    @unless ($run->isThirteenthMonth())
     <div class="row">
         <div class="col-lg-8">
             <div class="card">
@@ -142,4 +144,5 @@
             </div>
         @endif
     </div>
+    @endunless
 @stop

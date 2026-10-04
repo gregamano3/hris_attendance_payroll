@@ -80,6 +80,15 @@ return [
         'overtime_regular' => 1.25,   // OT on an ordinary day
         'overtime_premium' => 1.30,   // OT on rest days / holidays: day rate x 130%
         'night_differential' => 0.10, // +10% of the applicable hourly rate
+
+        // 13th month pay and other benefits are tax-exempt up to this amount
+        // per year (TRAIN law); the excess is taxable.
+        'thirteenth_month_exempt_ceiling' => (int) env('PAYROLL_13TH_MONTH_EXEMPT_CEILING', 90000),
+
+        // Payslip lines counted as "basic salary" for the 13th month pay
+        // (overtime, premiums, night differential, holiday pay and allowances
+        // are excluded per the PD 851 rules).
+        'thirteenth_month_basic_codes' => ['BASIC', 'ABSENCES', 'TARDINESS', 'PAID_LEAVE'],
     ],
 
 ];

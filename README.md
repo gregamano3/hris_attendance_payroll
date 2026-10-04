@@ -74,6 +74,7 @@ locked and its payslips become visible to employees. `PayslipCalculator` is pure
 | Night differential | +10% of the applicable hourly rate |
 | SSS / PhilHealth / Pag-IBIG | monthly amount on the monthly-equivalent pay, half deducted per run |
 | Withholding tax | BIR TRAIN semi-monthly table on taxable pay after employee contributions |
+| 13th month pay | Separate yearly run: 1/12 of basic salary from finalized regular runs, tax-exempt up to ₱90,000 |
 
 Statutory parameters (SSS brackets, PhilHealth rate/floor/ceiling, Pag-IBIG, BIR tables) are **effective-dated
 records** that can be edited under *Payroll → Statutory rates*, so a rate change doesn't need a release. The seeded

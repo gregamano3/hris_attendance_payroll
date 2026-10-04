@@ -1,12 +1,12 @@
-@props(['name', 'label', 'options' => [], 'value' => null, 'col' => 'col-md-6', 'placeholder' => null])
+@props(['name', 'label', 'id' => null, 'options' => [], 'value' => null, 'col' => 'col-md-6', 'placeholder' => null])
 
 @php
     $selected = (string) old($name, $value instanceof \BackedEnum ? $value->value : $value);
 @endphp
 
 <div class="{{ $col }}">
-    <label for="{{ $name }}" class="form-label">{{ $label }}</label>
-    <select id="{{ $name }}" name="{{ $name }}" {{ $attributes->class(['form-select', 'is-invalid' => $errors->has($name)]) }}>
+    <label for="{{ $id ?? $name }}" class="form-label">{{ $label }}</label>
+    <select id="{{ $id ?? $name }}" name="{{ $name }}" {{ $attributes->class(['form-select', 'is-invalid' => $errors->has($name)]) }}>
         @if ($placeholder !== null)
             <option value="">{{ $placeholder }}</option>
         @endif
