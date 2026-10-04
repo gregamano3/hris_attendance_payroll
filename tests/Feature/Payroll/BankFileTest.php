@@ -30,7 +30,7 @@ beforeEach(function () {
 });
 
 it('exports a CSV credit file for bank-paid employees only', function () {
-    $content = $this->actingAs($this->officer)->get("/payroll/runs/{$this->run->id}/bank.csv")->assertOk()->streamedContent();
+    $content = $this->actingAs($this->officer)->get("/payroll/runs/{$this->run->id}/bank.csv")->assertOk()->getContent();
     $rows = array_map('str_getcsv', array_values(array_filter(explode("\n", trim($content)))));
 
     expect($rows)->toHaveCount(3)
@@ -40,7 +40,7 @@ it('exports a CSV credit file for bank-paid employees only', function () {
 });
 
 it('exports a fixed-width file with matching header and trailer totals', function () {
-    $lines = explode("\r\n", trim($this->actingAs($this->officer)->get("/payroll/runs/{$this->run->id}/bank.txt")->assertOk()->streamedContent()));
+    $lines = explode("\r\n", trim($this->actingAs($this->officer)->get("/payroll/runs/{$this->run->id}/bank.txt")->assertOk()->getContent()));
 
     expect($lines)->toHaveCount(4)
         ->and(substr($lines[0], 0, 1))->toBe('H')
@@ -80,4 +80,21 @@ it('validates bank account numbers on the employee form', function () {
     $this->actingAs(userWithRole(Role::Hr))->put("/employees/{$employee->id}", [...$payload, 'bank_name' => 'BPI', 'bank_account_no' => '1234-5678-90'])
         ->assertSessionHasNoErrors();
     expect($employee->fresh()->bank_account_no)->toBe('1234567890');
+});
+
+it('exports every bank template with matching totals', function (string $format, string $marker) {
+    config(['hris.employer.bank_company_code' => 'ACME1', 'hris.employer.bank_account_no' => '1234567890']);
+
+    $content = $this->actingAs($this->officer)->get("/payroll/runs/{$this->run->id}/bank.{$format}")->assertOk()->getContent();
+
+    expect($content)->toContain($marker)->not->toContain('Cashpaid');
+})->with([
+    'BDO' => ['bdo', '001234567890,12345.67,"JUAN DELA CRUZ"'],
+    'BPI' => ['bpi', 'HACME1'.'1234567890'.'101526'.'00002'.'000000002234567'],
+    'Metrobank' => ['metrobank', '"ACCOUNT NUMBER","EMPLOYEE NAME",AMOUNT,REMARKS'],
+    'Security Bank' => ['securitybank', 'TOTAL,2,22345.67'],
+]);
+
+it('rejects unknown bank formats', function () {
+    $this->actingAs($this->officer)->get("/payroll/runs/{$this->run->id}/bank.unknown")->assertNotFound();
 });

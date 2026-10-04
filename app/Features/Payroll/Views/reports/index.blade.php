@@ -36,7 +36,15 @@
                     </div>
                 @endforeach
             </div>
-            <p class="small text-body-secondary mt-3 mb-0">{{ $rows->count() }} employee(s) in finalized runs this month.</p>
+            <p class="small text-body-secondary mt-3 mb-2">{{ $rows->count() }} employee(s) in finalized runs this month.</p>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span class="small fw-semibold">Agency upload files:</span>
+                @foreach (\App\Features\Payroll\EFiling\EFilingController::formats() as $format)
+                    @if ($format->frequency() === 'monthly')
+                        <a href="{{ route('payroll.reports.efile', ['format' => $format->key(), 'month' => $month->format('Y-m')]) }}" class="btn btn-sm btn-outline-secondary">{{ $format->label() }}</a>
+                    @endif
+                @endforeach
+            </div>
         </div>
     </div>
 
@@ -49,6 +57,7 @@
                 <button class="btn btn-sm btn-outline-secondary">Show</button>
             </form>
             <a href="{{ route('payroll.reports.alphalist', ['year' => $year]) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i> Alphalist CSV</a>
+            <a href="{{ route('payroll.reports.efile', ['format' => 'bir-alphalist', 'year' => $year]) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i> Alphalist DAT</a>
         </div>
         <div class="card-body p-0 table-responsive">
             <table class="table table-sm table-striped mb-0 align-middle">

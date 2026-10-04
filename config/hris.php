@@ -21,6 +21,22 @@ return [
     // additionally limited to 5 per account).
     'login_throttle_per_minute' => (int) (env('LOGIN_THROTTLE') ?: 10),
 
+    /*
+    | Employer details printed on government e-filing files and bank files.
+    */
+    'employer' => [
+        'name' => env('EMPLOYER_NAME', env('APP_NAME', 'Company')),
+        'address' => env('EMPLOYER_ADDRESS', ''),
+        'tin' => env('EMPLOYER_TIN', ''),            // 9 digits
+        'tin_branch' => env('EMPLOYER_TIN_BRANCH', '0000'),
+        'rdo' => env('EMPLOYER_RDO', ''),
+        'sss_no' => env('EMPLOYER_SSS_NO', ''),      // employer SSS number
+        'philhealth_no' => env('EMPLOYER_PHILHEALTH_NO', ''),
+        'pagibig_no' => env('EMPLOYER_PAGIBIG_NO', ''),
+        'bank_company_code' => env('EMPLOYER_BANK_COMPANY_CODE', ''),
+        'bank_account_no' => env('EMPLOYER_BANK_ACCOUNT_NO', ''),
+    ],
+
     'security' => [
         // Key for the blind indexes of encrypted columns (government IDs).
         // Generate with: php -r "echo bin2hex(random_bytes(32));"

@@ -9,9 +9,13 @@
             <a href="{{ route('payroll.runs.register', $run) }}" class="btn btn-outline-secondary"><i class="bi bi-filetype-csv me-1"></i> Register</a>
         @endif
         @if ($run->isLocked())
-            <div class="btn-group">
-                <a href="{{ route('payroll.runs.bank', [$run, 'csv']) }}" class="btn btn-outline-secondary"><i class="bi bi-bank me-1"></i> Bank file (CSV)</a>
-                <a href="{{ route('payroll.runs.bank', [$run, 'txt']) }}" class="btn btn-outline-secondary">TXT</a>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button"><i class="bi bi-bank me-1"></i> Bank file</button>
+                <ul class="dropdown-menu">
+                    @foreach (\App\Features\Payroll\ExportBankFile\ExportBankFileController::formats() as $format)
+                        <li><a class="dropdown-item" href="{{ route('payroll.runs.bank', [$run, $format->key()]) }}">{{ $format->label() }} (.{{ $format->extension() }})</a></li>
+                    @endforeach
+                </ul>
             </div>
         @endif
         @unless ($run->isLocked() || $run->isComputing())
