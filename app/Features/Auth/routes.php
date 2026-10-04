@@ -4,6 +4,7 @@ use App\Features\Auth\ForgotPassword\ForgotPasswordController;
 use App\Features\Auth\Login\LoginController;
 use App\Features\Auth\Logout\LogoutController;
 use App\Features\Auth\ResetPassword\ResetPasswordController;
+use App\Features\Auth\TwoFactorChallenge\TwoFactorChallengeController;
 use Illuminate\Support\Facades\Route;
 
 // URLs follow the conventions expected by the AdminLTE auth views.
@@ -18,6 +19,11 @@ Route::middleware('guest')->group(function () {
 
     Route::get('password/reset/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
     Route::post('password/reset', [ResetPasswordController::class, 'store'])->name('password.update');
+
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('two-factor.challenge.store');
 });
 
 Route::post('logout', LogoutController::class)->middleware('auth')->name('logout');

@@ -32,4 +32,57 @@
             </form>
         </div>
     </div>
+
+    <div class="card" id="two-factor">
+        <div class="card-header"><h3 class="card-title">Two-factor authentication</h3></div>
+        <div class="card-body">
+            @if (session('recovery_codes'))
+                <div class="alert alert-warning">
+                    <strong>Save these recovery codes</strong> somewhere safe. Each can be used once if you lose your phone. They won't be shown again.
+                    <pre class="mb-0 mt-2" id="recovery-codes">{{ implode("\n", session('recovery_codes')) }}</pre>
+                </div>
+            @endif
+
+            @if ($user->hasTwoFactorEnabled())
+                <p><span class="badge text-bg-success">On</span> since {{ $user->two_factor_confirmed_at->format('M j, Y') }} ·
+                    {{ count($user->two_factor_recovery_codes ?? []) }} recovery code(s) left.</p>
+                <div class="row g-2">
+                    <form method="post" action="{{ route('account.two-factor.recovery-codes') }}" class="col-md-6 d-flex gap-2">
+                        @csrf
+                        <input type="password" name="current_password" class="form-control form-control-sm" placeholder="Current password" aria-label="Current password" required>
+                        <button class="btn btn-sm btn-outline-secondary text-nowrap">New recovery codes</button>
+                    </form>
+                    @unless ($twoFactorRequired)
+                        <form method="post" action="{{ route('account.two-factor.disable') }}" class="col-md-6 d-flex gap-2">
+                            @csrf @method('delete')
+                            <input type="password" name="current_password" class="form-control form-control-sm" placeholder="Current password" aria-label="Current password" required>
+                            <button class="btn btn-sm btn-outline-danger text-nowrap">Turn off</button>
+                        </form>
+                    @endunless
+                </div>
+            @elseif ($twoFactorPending)
+                <div class="row">
+                    <div class="col-md-4 text-center">{!! $twoFactorQr !!}</div>
+                    <div class="col-md-8">
+                        <p>Scan the QR code with Google Authenticator, Microsoft Authenticator, Authy or a similar app, or enter this key:</p>
+                        <p><code id="two-factor-secret">{{ $user->two_factor_secret }}</code></p>
+                        <form method="post" action="{{ route('account.two-factor.confirm') }}" class="d-flex gap-2">
+                            @csrf
+                            <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" class="form-control @error('code') is-invalid @enderror" placeholder="6-digit code" aria-label="Authentication code" required>
+                            <button class="btn btn-primary text-nowrap">Confirm</button>
+                            @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </form>
+                    </div>
+                </div>
+            @else
+                <p>Protect your account with a code from your phone in addition to your password.
+                    @if ($twoFactorRequired)<strong>Your role requires it.</strong>@endif</p>
+                <form method="post" action="{{ route('account.two-factor.enable') }}" class="d-flex gap-2" style="max-width: 32rem">
+                    @csrf
+                    <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror" placeholder="Current password" aria-label="Current password" required>
+                    <button class="btn btn-primary text-nowrap">Turn on</button>
+                </form>
+            @endif
+        </div>
+    </div>
 @stop
