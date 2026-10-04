@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Api\EnsureActiveApiUser;
 use App\Features\Privacy\AcknowledgeNotice\RequirePrivacyAcknowledgement;
 use App\Shared\TwoFactor\RequireTwoFactor;
 use Illuminate\Foundation\Application;
@@ -7,6 +8,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', AuthenticateSession::class);
         $middleware->appendToGroup('web', RequireTwoFactor::class);
         $middleware->appendToGroup('web', RequirePrivacyAcknowledgement::class);
+
+        // REST API v1: Sanctum bearer tokens, active users only, per-user rate limit.
+        $middleware->group('api.v1', ['auth:sanctum', EnsureActiveApiUser::class, 'throttle:api-v1']);
+        $middleware->alias(['abilities' => CheckAbilities::class, 'ability' => CheckForAnyAbility::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
