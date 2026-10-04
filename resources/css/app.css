@@ -1,9 +1,7 @@
-@import 'tailwindcss';
+/* Application specific styles (AdminLTE + Bootstrap 5 are loaded by the layout). */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+.table td.actions,
+.table th.actions {
+    white-space: nowrap;
+    width: 1%;
 }

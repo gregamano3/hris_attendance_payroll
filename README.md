@@ -8,7 +8,7 @@ Philippine payroll (SSS, PhilHealth, Pag-IBIG, BIR withholding tax).
 
 ## Stack
 
-- **Laravel 13** (PHP 8.4) + **AdminLTE** UI
+- **Laravel 13** (PHP 8.4) + **AdminLTE 4** (Bootstrap 5) UI
 - **PostgreSQL 17** database, **Redis 7** for cache / sessions / queues
 - **Docker Compose** for development, multi-stage production image
 - **Vertical slice architecture** — each feature lives in `app/Features/<Feature>`
@@ -38,7 +38,19 @@ make setup
 | Mailpit | http://localhost:8026 |
 | Health  | http://localhost:8080/health |
 
+Sign in with the seeded administrator **admin@example.com / password**
+(configurable through `ADMIN_EMAIL` / `ADMIN_PASSWORD`) and change the password immediately.
+
 Run `make help` to see all commands.
+
+## Roles
+
+| Role | Can |
+|------|-----|
+| Administrator | Everything, including user management |
+| Human Resources | Employees, attendance, leave approvals |
+| Payroll Officer | Payroll runs, payslips, statutory tables |
+| Employee | Clock in/out, leave requests, own payslips |
 
 ## Services
 
