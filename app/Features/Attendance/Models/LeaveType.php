@@ -10,9 +10,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $code
  * @property string $name
  * @property bool $is_paid
+ * @property bool $is_convertible
  * @property int $days_per_year
  */
-#[Fillable(['code', 'name', 'is_paid', 'days_per_year'])]
+#[Fillable(['code', 'name', 'is_paid', 'is_convertible', 'days_per_year'])]
 class LeaveType extends Model
 {
     /**
@@ -20,7 +21,7 @@ class LeaveType extends Model
      */
     protected function casts(): array
     {
-        return ['is_paid' => 'boolean', 'days_per_year' => 'integer'];
+        return ['is_paid' => 'boolean', 'is_convertible' => 'boolean', 'days_per_year' => 'integer'];
     }
 
     public function hasYearlyCap(): bool

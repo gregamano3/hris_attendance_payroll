@@ -8,6 +8,7 @@ use App\Features\Employees\Enums\EmploymentType;
 use App\Features\Employees\Enums\Gender;
 use App\Features\Employees\Enums\GovernmentId;
 use App\Features\Employees\Enums\RateType;
+use App\Features\Payroll\Models\FinalPay;
 use App\Models\User;
 use App\Shared\Money\Money;
 use App\Shared\Money\MoneyCast;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -113,6 +115,14 @@ class Employee extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return HasOne<FinalPay, $this>
+     */
+    public function finalPay(): HasOne
+    {
+        return $this->hasOne(FinalPay::class);
     }
 
     /**

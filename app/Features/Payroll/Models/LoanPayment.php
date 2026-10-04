@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $id
  * @property int $loan_id
- * @property int $payroll_run_id
+ * @property int|null $payroll_run_id
+ * @property int|null $final_pay_id
  * @property Money $amount
  * @property Money $balance_after
- * @property-read PayrollRun $run
+ * @property-read PayrollRun|null $run
  */
-#[Fillable(['loan_id', 'payroll_run_id', 'amount', 'balance_after'])]
+#[Fillable(['loan_id', 'payroll_run_id', 'final_pay_id', 'amount', 'balance_after'])]
 class LoanPayment extends Model
 {
     /**

@@ -77,6 +77,7 @@ locked and its payslips become visible to employees. `PayslipCalculator` is pure
 | Recurring allowances | Added to every run between their dates as taxable, de minimis or non-taxable |
 | Loans | SSS / Pag-IBIG / company loans and cash advances deducted each run (capped at the balance). The balance drops when the run is finalized |
 | Minimum wage earners | Statutory wages, holiday pay, OT, ND and premiums are tax-exempt; other taxable income is taxed |
+| Final pay | Pro-rated 13th month, unused convertible leave (first 10 days tax-exempt), outstanding loans and the tax annualization on separation |
 | 13th month pay | Separate yearly run: 1/12 of basic salary from finalized regular runs, tax-exempt up to ₱90,000 |
 
 Statutory parameters (SSS brackets, PhilHealth rate/floor/ceiling, Pag-IBIG, BIR tables) are **effective-dated

@@ -40,6 +40,16 @@ class LeaveBalances
     }
 
     /**
+     * Unused days of convertible leave types (paid out on separation).
+     */
+    public function unusedConvertibleDays(int $employeeId, int $year): float
+    {
+        return (float) $this->forEmployee($employeeId, $year)
+            ->filter(fn (array $b) => $b['type']->is_convertible && $b['remaining'] !== null)
+            ->sum(fn (array $b) => max(0, $b['remaining']));
+    }
+
+    /**
      * Working days in the range for the employee (rest days and holidays excluded).
      */
     public function workingDays(int $employeeId, Carbon $from, Carbon $to): int
