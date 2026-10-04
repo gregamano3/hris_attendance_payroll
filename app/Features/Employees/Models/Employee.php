@@ -9,6 +9,7 @@ use App\Features\Employees\Enums\Gender;
 use App\Features\Employees\Enums\GovernmentId;
 use App\Features\Employees\Enums\RateType;
 use App\Features\Payroll\Models\FinalPay;
+use App\Features\Performance\Models\Training;
 use App\Features\Recruitment\Models\OnboardingTask;
 use App\Models\User;
 use App\Shared\Audit\Auditable;
@@ -190,6 +191,14 @@ class Employee extends Model
     public function directReports(): HasMany
     {
         return $this->hasMany(self::class, 'supervisor_id');
+    }
+
+    /**
+     * @return HasMany<Training, $this>
+     */
+    public function trainings(): HasMany
+    {
+        return $this->hasMany(Training::class)->latest('completed_on');
     }
 
     /**

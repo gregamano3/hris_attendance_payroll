@@ -34,6 +34,8 @@ class AnonymizeEmployees
             $label = "Former employee #{$employee->id}";
 
             $employee->documents()->get()->each->delete(); // also deletes the encrypted files
+            $employee->trainings()->get()->each->delete();
+            DB::table('performance_reviews')->where('employee_id', $employee->id)->update(['self_assessment' => null, 'comments' => null]);
 
             if ($employee->user !== null) {
                 $employee->user->forceFill([

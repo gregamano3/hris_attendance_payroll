@@ -849,6 +849,25 @@ return [
             'can' => 'recruitment.manage',
             'active' => ['recruitment/onboarding*'],
         ],
+        [
+            'text' => 'Review cycles',
+            'route' => 'performance.cycles.index',
+            'icon' => 'bi bi-graph-up',
+            'can' => 'performance.manage',
+            'active' => ['performance/cycles*'],
+        ],
+        [
+            'text' => 'Training records',
+            'route' => 'performance.trainings.index',
+            'icon' => 'bi bi-mortarboard',
+            'can' => 'performance.manage',
+        ],
+        [
+            'text' => 'Performance reviews',
+            'route' => 'performance.reviews.index',
+            'icon' => 'bi bi-star-half',
+            'active' => ['performance/reviews*'],
+        ],
         ['header' => 'ATTENDANCE'],
         [
             'text' => 'Time clock',

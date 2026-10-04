@@ -12,6 +12,7 @@ use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Models\Payslip;
 use App\Features\Payroll\Models\PayslipLine;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Everything the system holds about a person (RA 10173 right of access).
@@ -59,6 +60,15 @@ class PersonalDataExport
             ])->values()->all(),
             'documents' => $employee->documents->map(fn ($d) => ['title' => $d->title, 'category' => $d->category->value, 'uploaded_at' => $d->created_at?->toIso8601String()])->values()->all(),
         ];
+
+        $data['trainings'] = $employee->trainings()->get()->map(fn ($t) => [
+            'title' => $t->title, 'provider' => $t->provider, 'completed_on' => $t->completed_on->toDateString(), 'expires_on' => $t->expires_on?->toDateString(),
+        ])->all();
+        $data['performance_reviews'] = DB::table('performance_reviews')->join('review_cycles', 'review_cycles.id', '=', 'performance_reviews.review_cycle_id')
+            ->where('employee_id', $employee->id)->whereIn('performance_reviews.status', ['completed', 'acknowledged'])
+            ->get(['review_cycles.name as cycle', 'overall_rating', 'ratings', 'comments', 'self_assessment'])
+            ->map(fn ($r) => ['cycle' => $r->cycle, 'overall_rating' => $r->overall_rating, 'ratings' => json_decode((string) $r->ratings, true), 'comments' => $r->comments, 'self_assessment' => $r->self_assessment])
+            ->all();
 
         $data['time_logs'] = TimeLog::query()->where('employee_id', $employee->id)->orderBy('logged_at')->get()
             ->map(fn (TimeLog $l) => ['at' => $l->logged_at->toIso8601String(), 'type' => $l->type->value, 'source' => $l->source->value])->all();
