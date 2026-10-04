@@ -6,6 +6,7 @@ use App\Features\Attendance\ManageHolidays\HolidaysController;
 use App\Features\Attendance\ManageLeaveTypes\LeaveTypesController;
 use App\Features\Attendance\ManageShifts\ShiftsController;
 use App\Features\Attendance\ManageTimeLogs\TimeLogsController;
+use App\Features\Attendance\PrintDtr\PrintDtrController;
 use App\Features\Attendance\RequestLeave\LeaveRequestsController;
 use App\Features\Attendance\RequestOvertime\OvertimeRequestsController;
 use App\Features\Attendance\ReviewLeaves\ReviewLeavesController;
@@ -20,9 +21,11 @@ Route::middleware('auth')->group(function () {
             Route::get('clock', [ClockController::class, 'show'])->name('clock');
             Route::post('clock', [ClockController::class, 'store'])->middleware('throttle:10,1')->name('clock.store');
             Route::get('mine', ShowMyAttendanceController::class)->name('mine');
+            Route::get('mine/pdf', [PrintDtrController::class, 'mine'])->name('mine.pdf');
         });
 
         Route::get('dtr', ShowDtrController::class)->middleware('can:attendance.view')->name('dtr');
+        Route::get('dtr/{employee}/pdf', [PrintDtrController::class, 'forEmployee'])->middleware('can:attendance.view')->name('dtr.pdf');
 
         Route::middleware('can:attendance.manage')->group(function () {
             Route::get('logs', [TimeLogsController::class, 'index'])->name('logs.index');
