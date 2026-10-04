@@ -12,6 +12,7 @@ use ReflectionClass;
  *
  * By convention it loads, when present:
  *  - routes.php  (wrapped in the "web" middleware group)
+ *  - api.php     (prefixed with /api, "api" middleware group, stateless)
  *  - Views/      (registered under the kebab-cased feature namespace, e.g. "employees::index")
  */
 abstract class FeatureServiceProvider extends ServiceProvider
@@ -20,8 +21,14 @@ abstract class FeatureServiceProvider extends ServiceProvider
     {
         $directory = $this->featurePath();
 
-        if (is_file($directory.'/routes.php') && ! $this->app->routesAreCached()) {
-            Route::middleware('web')->group($directory.'/routes.php');
+        if (! $this->app->routesAreCached()) {
+            if (is_file($directory.'/routes.php')) {
+                Route::middleware('web')->group($directory.'/routes.php');
+            }
+
+            if (is_file($directory.'/api.php')) {
+                Route::middleware('api')->prefix('api')->name('api.')->group($directory.'/api.php');
+            }
         }
 
         if (is_dir($directory.'/Views')) {

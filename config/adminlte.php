@@ -885,6 +885,12 @@ return [
             'active' => ['attendance/logs*', 'attendance/import*'],
         ],
         [
+            'text' => 'Biometric devices',
+            'route' => 'devices.index',
+            'icon' => 'bi bi-hdd-network',
+            'can' => 'attendance.manage',
+        ],
+        [
             'text' => 'Shifts',
             'route' => 'shifts.index',
             'icon' => 'bi bi-calendar-week',

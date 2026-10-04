@@ -24,12 +24,14 @@ use Illuminate\Support\Carbon;
  * @property TimeLogSource $source
  * @property string|null $remarks
  * @property string|null $ip_address
+ * @property int|null $distance_m
+ * @property int|null $attendance_device_id
  * @property int|null $created_by
  * @property int|null $deleted_by
  * @property-read Employee $employee
  * @property-read User|null $creator
  */
-#[Fillable(['employee_id', 'logged_at', 'type', 'source', 'remarks', 'ip_address', 'created_by'])]
+#[Fillable(['employee_id', 'logged_at', 'type', 'source', 'remarks', 'ip_address', 'distance_m', 'attendance_device_id', 'created_by'])]
 class TimeLog extends Model
 {
     use Auditable, SoftDeletes;
