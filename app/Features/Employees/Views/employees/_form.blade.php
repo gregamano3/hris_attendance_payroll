@@ -26,6 +26,7 @@
         <x-form.select name="employment_type" label="Employment type" :options="$employmentTypes" :value="$employee->employment_type" col="col-md-4" required />
         <x-form.select name="status" label="Status" :options="$statuses" :value="$employee->status" col="col-md-4" required />
         <x-form.select name="user_id" label="Linked user account" :options="$users" :value="$employee->user_id" col="col-md-4" placeholder="— None —" />
+        <x-form.select name="supervisor_id" label="Supervisor (approves requests)" :options="$supervisors" :value="$employee->supervisor_id" col="col-md-4" placeholder="— None —" />
         <x-form.input name="hired_at" label="Hire date" type="date" :value="$employee->hired_at?->toDateString()" col="col-md-4" required />
         <x-form.input name="regularized_at" label="Regularization date" type="date" :value="$employee->regularized_at?->toDateString()" col="col-md-4" />
         <x-form.input name="separated_at" label="Separation date" type="date" :value="$employee->separated_at?->toDateString()" col="col-md-4"

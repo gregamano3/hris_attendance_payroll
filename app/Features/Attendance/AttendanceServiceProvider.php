@@ -13,9 +13,12 @@ use App\Features\Attendance\Models\OvertimeRequest;
 use App\Features\Attendance\Models\TimeLog;
 use App\Features\Attendance\Queries\HolidayCalendar;
 use App\Features\Employees\Models\Employee;
+use App\Features\Employees\Queries\EmployeeDirectory;
+use App\Models\User;
 use App\Shared\Providers\FeatureServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 
 class AttendanceServiceProvider extends FeatureServiceProvider
 {
@@ -31,6 +34,12 @@ class AttendanceServiceProvider extends FeatureServiceProvider
         });
 
         $this->registerRecomputeTriggers();
+
+        // Approvers: HR (permission) or supervisors / department heads for their team.
+        foreach (['review-leaves' => 'leaves.approve', 'review-overtime' => 'overtime.approve'] as $ability => $permission) {
+            Gate::define($ability, fn (User $user) => $user->hasPermissionTo($permission)
+                || app(EmployeeDirectory::class)->teamIdsOf($user)->isNotEmpty());
+        }
     }
 
     /**

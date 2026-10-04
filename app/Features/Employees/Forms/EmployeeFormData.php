@@ -31,6 +31,8 @@ class EmployeeFormData
                 ->whereNotIn('id', Employee::query()->whereNotNull('user_id')->whereKeyNot($employee->getKey() ?? 0)->select('user_id'))
                 ->orderBy('name')
                 ->pluck('name', 'id'),
+            'supervisors' => Employee::query()->active()->whereKeyNot($employee->getKey() ?? 0)->orderBy('last_name')->orderBy('first_name')->get()
+                ->mapWithKeys(fn (Employee $e): array => [$e->id => $e->full_name])->all(),
             'employmentTypes' => EmploymentType::options(),
             'statuses' => EmploymentStatus::options(),
             'rateTypes' => RateType::options(),

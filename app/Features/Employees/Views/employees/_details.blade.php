@@ -12,6 +12,7 @@
             <ul class="list-group list-group-flush">
                 <li class="list-group-item d-flex justify-content-between"><span>Employee no.</span><strong>{{ $employee->employee_no }}</strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Department</span><strong>{{ $employee->department->name ?? '—' }}</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Supervisor</span><strong>{{ $employee->supervisor?->full_name ?? '—' }}</strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Type</span><strong>{{ $employee->employment_type->label() }}</strong></li>
                 <li class="list-group-item d-flex justify-content-between"><span>Hired</span><strong>{{ $employee->hired_at->format('M d, Y') }}</strong></li>
             </ul>
