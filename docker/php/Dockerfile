@@ -54,9 +54,12 @@ FROM base AS prod
 
 COPY --chown=www-data:www-data . .
 COPY --from=assets --chown=www-data:www-data /app/public/build ./public/build
+COPY --from=assets /app/node_modules ./node_modules
 
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && php artisan adminlte:install --only=assets --only=vendor_assets --force -n \
+    && rm -rf node_modules \
+    && chown -R www-data:www-data storage bootstrap/cache public/vendor
 
 USER www-data
 

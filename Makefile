@@ -12,7 +12,11 @@ setup: ## First-time setup: env, images, dependencies, database
 	$(APP) composer install
 	$(APP) php artisan key:generate
 	$(APP) php artisan migrate --seed
-	$(DC) run --rm node sh -c "npm install && npm run build"
+	$(MAKE) assets
+
+assets: ## Install npm deps, build Vite assets and publish AdminLTE assets
+	$(DC) run --rm --no-deps node sh -c "npm install && npm run build"
+	$(APP) php artisan adminlte:install --only=assets --only=vendor_assets --force -n
 
 up: ## Start the stack
 	$(DC) up -d
@@ -55,4 +59,4 @@ check: lint stan test ## Run all quality checks
 e2e: ## Run Playwright end-to-end tests
 	cd e2e && npm ci && npx playwright test
 
-.PHONY: help setup up down logs shell artisan composer npm fresh test lint fix stan check e2e
+.PHONY: help setup assets up down logs shell artisan composer npm fresh test lint fix stan check e2e
