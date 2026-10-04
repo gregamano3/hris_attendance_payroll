@@ -6,6 +6,7 @@ use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Enums\TimeLogType;
 use App\Features\Attendance\Models\AttendanceDay;
 use App\Features\Attendance\Models\LeaveRequest;
+use App\Features\Attendance\Models\OvertimeRequest;
 use App\Features\Attendance\Models\TimeLog;
 use App\Features\Attendance\Queries\HolidayCalendar;
 use App\Features\Attendance\Queries\ShiftResolver;
@@ -43,6 +44,14 @@ class ComputeAttendanceDay
             ->whereDate('end_date', '>=', $date)
             ->value('id');
 
+        $approvedOvertime = config('hris.attendance.overtime_requires_approval')
+            ? (int) OvertimeRequest::query()
+                ->where('employee_id', $employeeId)
+                ->whereDate('date', $date)
+                ->where('status', LeaveStatus::Approved)
+                ->sum('minutes')
+            : null;
+
         $result = AttendanceCalculator::fromConfig()->compute(new DayInput(
             date: $date,
             shift: $shift,
@@ -50,6 +59,7 @@ class ComputeAttendanceDay
             timeOuts: $logs->where('type', TimeLogType::Out)->pluck('logged_at')->values()->all(),
             holiday: $this->holidays->typeOn($date),
             leaveRequestId: $leaveId,
+            approvedOvertimeMinutes: $approvedOvertime,
         ));
 
         return AttendanceDay::query()->updateOrCreate(

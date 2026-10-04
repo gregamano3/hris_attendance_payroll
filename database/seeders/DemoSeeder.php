@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Features\Attendance\Compute\ComputeAttendanceDay;
+use App\Features\Attendance\Enums\LeaveStatus;
 use App\Features\Attendance\Enums\TimeLogSource;
 use App\Features\Attendance\Enums\TimeLogType;
+use App\Features\Attendance\Models\OvertimeRequest;
 use App\Features\Attendance\Models\TimeLog;
 use App\Features\Employees\Enums\EmploymentType;
 use App\Features\Employees\Models\Department;
@@ -124,7 +126,16 @@ class DemoSeeder extends Seeder
                     }
 
                     $in = $date->copy()->setTime(7, 45)->addMinutes(fake()->biasedNumberBetween(0, 45, 'Faker\Provider\Biased::linearLow'));
-                    $out = $date->copy()->setTime(17, 0)->addMinutes(fake()->boolean(25) ? fake()->numberBetween(30, 180) : fake()->numberBetween(0, 10));
+                    $extra = fake()->boolean(25) ? fake()->numberBetween(30, 180) : fake()->numberBetween(0, 10);
+                    $out = $date->copy()->setTime(17, 0)->addMinutes($extra);
+
+                    if ($extra >= 30) {
+                        OvertimeRequest::query()->insert([
+                            'employee_id' => $employeeId, 'date' => $date->toDateString(), 'minutes' => $extra,
+                            'reason' => 'Month-end workload', 'status' => LeaveStatus::Approved->value,
+                            'reviewed_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+                        ]);
+                    }
 
                     TimeLog::query()->insert([
                         ['employee_id' => $employeeId, 'logged_at' => $in, 'type' => TimeLogType::In->value, 'source' => TimeLogSource::Import->value, 'created_at' => now(), 'updated_at' => now()],

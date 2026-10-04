@@ -42,6 +42,8 @@ enum Role: string
                 Permission::AttendanceManage,
                 Permission::LeavesRequest,
                 Permission::LeavesApprove,
+                Permission::OvertimeRequest,
+                Permission::OvertimeApprove,
                 Permission::PayslipsViewOwn,
             ],
             self::Payroll => [
@@ -50,6 +52,7 @@ enum Role: string
                 Permission::AttendanceClock,
                 Permission::AttendanceView,
                 Permission::LeavesRequest,
+                Permission::OvertimeRequest,
                 Permission::PayrollView,
                 Permission::PayrollManage,
                 Permission::PayrollFinalize,
@@ -60,6 +63,7 @@ enum Role: string
                 Permission::DashboardView,
                 Permission::AttendanceClock,
                 Permission::LeavesRequest,
+                Permission::OvertimeRequest,
                 Permission::PayslipsViewOwn,
             ],
         };

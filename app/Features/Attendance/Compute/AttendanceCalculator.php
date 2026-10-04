@@ -15,7 +15,8 @@ use Illuminate\Support\Carbon;
  *    (then the full lateness counts).
  *  - Undertime: minutes left before shift end.
  *  - Worked: scheduled minutes (span minus break) minus late and undertime.
- *  - Overtime: minutes after shift end, ignored below the configured threshold.
+ *  - Overtime: minutes after shift end, ignored below the configured threshold
+ *    and capped at the approved minutes when overtime requires approval.
  *  - Rest days and holidays: everything worked counts, no late/undertime; time
  *    beyond the scheduled minutes is overtime.
  *  - Night differential: paid minutes between 22:00 and 06:00.
@@ -78,7 +79,7 @@ class AttendanceCalculator
             $span = $this->minutesBetween($timeIn, $timeOut);
             $paid = max(0, $span - ($span > $scheduled / 2 ? $shift->break_minutes : 0));
             $worked = min($paid, $scheduled);
-            $overtime = $this->applyThreshold($paid - $worked);
+            $overtime = $this->capToApproved($this->applyThreshold($paid - $worked), $input);
 
             return new DayResult(
                 ...$base,
@@ -95,10 +96,10 @@ class AttendanceCalculator
         $late = $lateRaw > $shift->grace_minutes ? $lateRaw : 0;
         $undertime = $timeOut->lt($end) ? $this->minutesBetween($timeOut, $end) : 0;
         $worked = max(0, $scheduled - $late - $undertime);
-        $overtime = $timeOut->gt($end) ? $this->applyThreshold($this->minutesBetween($end, $timeOut)) : 0;
+        $overtime = $timeOut->gt($end) ? $this->capToApproved($this->applyThreshold($this->minutesBetween($end, $timeOut)), $input) : 0;
 
         $paidStart = $timeIn->gt($start) ? $timeIn : $start;
-        $paidEnd = $overtime > 0 ? $timeOut : ($timeOut->lt($end) ? $timeOut : $end);
+        $paidEnd = $overtime > 0 ? $end->copy()->addMinutes($overtime) : ($timeOut->lt($end) ? $timeOut : $end);
 
         return new DayResult(
             ...$base,
@@ -111,6 +112,11 @@ class AttendanceCalculator
             overtimeMinutes: $overtime,
             nightDiffMinutes: min($this->nightMinutes($paidStart, $paidEnd), $worked + $overtime),
         );
+    }
+
+    private function capToApproved(int $minutes, DayInput $input): int
+    {
+        return $input->approvedOvertimeMinutes === null ? $minutes : min($minutes, $input->approvedOvertimeMinutes);
     }
 
     private function applyThreshold(int $minutes): int

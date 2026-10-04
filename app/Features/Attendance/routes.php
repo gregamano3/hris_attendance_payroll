@@ -6,7 +6,9 @@ use App\Features\Attendance\ManageHolidays\HolidaysController;
 use App\Features\Attendance\ManageShifts\ShiftsController;
 use App\Features\Attendance\ManageTimeLogs\TimeLogsController;
 use App\Features\Attendance\RequestLeave\LeaveRequestsController;
+use App\Features\Attendance\RequestOvertime\OvertimeRequestsController;
 use App\Features\Attendance\ReviewLeaves\ReviewLeavesController;
+use App\Features\Attendance\ReviewOvertime\ReviewOvertimeController;
 use App\Features\Attendance\ShowDtr\ShowDtrController;
 use App\Features\Attendance\ShowMyAttendance\ShowMyAttendanceController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +48,19 @@ Route::middleware('auth')->group(function () {
         Route::middleware('can:leaves.approve')->group(function () {
             Route::get('review', [ReviewLeavesController::class, 'index'])->name('review');
             Route::patch('{leaveRequest}/review', [ReviewLeavesController::class, 'update'])->name('review.update');
+        });
+    });
+
+    Route::prefix('overtime')->name('overtime.')->group(function () {
+        Route::middleware('can:overtime.request')->group(function () {
+            Route::get('/', [OvertimeRequestsController::class, 'index'])->name('index');
+            Route::post('/', [OvertimeRequestsController::class, 'store'])->name('store');
+            Route::patch('{overtimeRequest}/cancel', [OvertimeRequestsController::class, 'cancel'])->name('cancel');
+        });
+
+        Route::middleware('can:overtime.approve')->group(function () {
+            Route::get('review', [ReviewOvertimeController::class, 'index'])->name('review');
+            Route::patch('{overtimeRequest}/review', [ReviewOvertimeController::class, 'update'])->name('review.update');
         });
     });
 });

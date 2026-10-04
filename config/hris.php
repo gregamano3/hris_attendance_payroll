@@ -31,6 +31,9 @@ return [
         // Overtime shorter than this is ignored.
         'overtime_threshold_minutes' => (int) env('ATTENDANCE_OT_THRESHOLD', 30),
 
+        // Only approved overtime (capped at the approved minutes) is paid.
+        'overtime_requires_approval' => (bool) env('ATTENDANCE_OT_REQUIRES_APPROVAL', true),
+
         // Night differential window (Labor Code Art. 86: 10 PM to 6 AM).
         'night_diff_start_hour' => 22,
         'night_diff_end_hour' => 6,

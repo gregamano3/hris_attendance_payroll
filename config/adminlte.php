@@ -842,6 +842,18 @@ return [
             'can' => 'leaves.approve',
         ],
         [
+            'text' => 'My overtime',
+            'route' => 'overtime.index',
+            'icon' => 'bi bi-hourglass-split',
+            'can' => 'overtime.request',
+        ],
+        [
+            'text' => 'Overtime approvals',
+            'route' => 'overtime.review',
+            'icon' => 'bi bi-clipboard-check',
+            'can' => 'overtime.approve',
+        ],
+        [
             'text' => 'Daily time records',
             'route' => 'attendance.dtr',
             'icon' => 'bi bi-table',

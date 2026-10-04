@@ -165,3 +165,26 @@ it('flags incomplete logs', function () {
 
     expect($day->status)->toBe(AttendanceStatus::Incomplete)->and($day->workedMinutes)->toBe(0);
 });
+
+it('caps overtime at the approved minutes when approval is required', function () {
+    $calculator = new AttendanceCalculator(overtimeThresholdMinutes: 30);
+    $input = fn (?int $approved) => new DayInput(
+        date: Carbon::parse('2026-10-05'),
+        shift: dayShift(),
+        timeIns: [Carbon::parse('2026-10-05 08:00')],
+        timeOuts: [Carbon::parse('2026-10-06 00:00')],
+        now: Carbon::parse('2026-12-31'),
+        approvedOvertimeMinutes: $approved,
+    );
+
+    $unapproved = $calculator->compute($input(0));
+    $partly = $calculator->compute($input(240));
+    $free = $calculator->compute($input(null));
+
+    expect($unapproved->overtimeMinutes)->toBe(0)
+        ->and($unapproved->nightDiffMinutes)->toBe(0)
+        ->and($partly->overtimeMinutes)->toBe(240)   // until 21:00
+        ->and($partly->nightDiffMinutes)->toBe(0)
+        ->and($free->overtimeMinutes)->toBe(420)
+        ->and($free->nightDiffMinutes)->toBe(120);
+});
