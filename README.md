@@ -68,6 +68,7 @@ locked and its payslips become visible to employees. `PayslipCalculator` is pure
 | Daily rate | monthly × 12 ÷ `PAYROLL_DAYS_PER_YEAR` (default 261), or the daily rate |
 | Monthly-rated | ½ monthly salary − absences − late/undertime, plus premiums not already covered by the salary |
 | Daily-rated | hours worked + unworked regular holidays + paid leaves |
+| Holiday pay eligibility | Unworked regular holidays are paid only if the employee was present or on paid leave on the preceding work day (`PAYROLL_HOLIDAY_ELIGIBILITY`) |
 | Overtime | 125% on ordinary days; day rate × 130% on rest days and holidays |
 | Rest / special day | 130% (150% when a special day falls on a rest day) |
 | Regular holiday | 200% (260% on a rest day) |

@@ -81,6 +81,10 @@ return [
         'overtime_premium' => 1.30,   // OT on rest days / holidays: day rate x 130%
         'night_differential' => 0.10, // +10% of the applicable hourly rate
 
+        // Unworked regular holidays are paid only when the employee was
+        // present (or on paid leave) on the preceding work day.
+        'holiday_eligibility' => (bool) env('PAYROLL_HOLIDAY_ELIGIBILITY', true),
+
         // 13th month pay and other benefits are tax-exempt up to this amount
         // per year (TRAIN law); the excess is taxable.
         'thirteenth_month_exempt_ceiling' => (int) env('PAYROLL_13TH_MONTH_EXEMPT_CEILING', 90000),

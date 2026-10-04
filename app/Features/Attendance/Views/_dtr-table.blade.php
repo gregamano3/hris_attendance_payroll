@@ -55,6 +55,9 @@
                             @if ($day->holiday_type)
                                 <span class="badge text-bg-{{ $day->holiday_type->badge() }}">{{ $day->holiday_type->label() }}</span>
                             @endif
+                            @if ($day->holiday_pay_eligible === false)
+                                <span class="badge text-bg-warning" title="Absent on the preceding work day">No holiday pay</span>
+                            @endif
                             @if ($day->leaveRequest)
                                 <span class="badge text-bg-light border">{{ $day->leaveRequest->leaveType->code }}</span>
                             @endif

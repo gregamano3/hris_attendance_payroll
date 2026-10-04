@@ -203,3 +203,18 @@ it('pays half-day leaves as half paid leave and half work', function () {
         ->and($monthly->amountOf('ABSENCES')->toDecimal())->toBe('-600.00') // only the unworked half of Oct 2 (daily 1,200)
         ->and($monthly->amountOf('TARDINESS')->isZero())->toBeTrue();
 });
+
+it('does not pay unworked regular holidays without eligibility', function () {
+    $days = [
+        new DayData('2026-04-01', DayData::ABSENT),
+        new DayData('2026-04-02', DayData::HOLIDAY, holiday: 'regular', holidayPayEligible: false),
+        new DayData('2026-04-09', DayData::HOLIDAY, holiday: 'regular'),
+    ];
+
+    $daily = payslipCalculator()->compute(new PayslipInput(monthlyRated: false, basicRate: Money::ofPesos(800), days: $days));
+    $monthly = payslipCalculator()->compute(new PayslipInput(monthlyRated: true, basicRate: Money::ofPesos(26100), days: $days));
+
+    expect($daily->amountOf('HOLIDAY_PAY')->toDecimal())->toBe('800.00')    // only Apr 9
+        ->and($monthly->amountOf('ABSENCES')->toDecimal())->toBe('-2400.00') // absence + unpaid holiday
+        ->and($monthly->warnings)->toContain('1 regular holiday(s) unpaid: absent on the preceding work day.');
+});
