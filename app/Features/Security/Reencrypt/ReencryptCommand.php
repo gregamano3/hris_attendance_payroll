@@ -82,7 +82,11 @@ class ReencryptCommand extends Command
             $counts['documents']++;
         });
 
-        DB::table('leave_requests')->whereNotNull('attachment_path')->pluck('attachment_path')->each(function (string $path) use (&$counts) {
+        $paths = DB::table('leave_requests')->whereNotNull('attachment_path')->pluck('attachment_path')
+            ->merge(DB::table('applicants')->whereNotNull('resume_path')->pluck('resume_path'))
+            ->merge(DB::table('trainings')->whereNotNull('certificate_path')->pluck('certificate_path'));
+
+        $paths->each(function (string $path) use (&$counts) {
             if (Storage::disk('local')->exists($path)) {
                 EncryptedFiles::put('local', $path, EncryptedFiles::get('local', $path));
                 $counts['documents']++;
