@@ -895,6 +895,19 @@ return [
             'active' => ['payroll/runs*', 'payroll/payslips*'],
         ],
         [
+            'text' => 'Recurring allowances',
+            'route' => 'payroll.allowances.index',
+            'icon' => 'bi bi-arrow-repeat',
+            'can' => 'payroll.view',
+        ],
+        [
+            'text' => 'Loans',
+            'route' => 'payroll.loans.index',
+            'icon' => 'bi bi-piggy-bank',
+            'can' => 'payroll.view',
+            'active' => ['payroll/loans*'],
+        ],
+        [
             'text' => 'Statutory rates',
             'route' => 'payroll.statutory.index',
             'icon' => 'bi bi-bank',

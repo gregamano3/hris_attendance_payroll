@@ -15,7 +15,7 @@ class ExportRegisterController
         'BASIC' => 'Basic', 'ABSENCES' => 'Absences', 'TARDINESS' => 'Late/UT', 'OVERTIME' => 'Overtime',
         'PREMIUM' => 'Premiums', 'NIGHT_DIFF' => 'Night diff', 'ALLOWANCE' => 'Allowances',
         'SSS' => 'SSS', 'PHILHEALTH' => 'PhilHealth', 'PAGIBIG' => 'Pag-IBIG', 'TAX' => 'Tax',
-        'OTHER_DEDUCTION' => 'Other deductions',
+        'LOANS' => 'Loans', 'OTHER_DEDUCTION' => 'Other deductions',
     ];
 
     public function __invoke(PayrollRun $run): StreamedResponse
@@ -49,6 +49,7 @@ class ExportRegisterController
         $prefix = match ($code) {
             'OVERTIME' => 'OT_',
             'PREMIUM' => 'PREMIUM_',
+            'LOANS' => 'LOAN_',
             default => null,
         };
 
