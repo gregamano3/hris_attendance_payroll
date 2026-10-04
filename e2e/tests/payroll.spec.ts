@@ -32,7 +32,7 @@ test.describe('payroll', () => {
 
     await login(page, 'employee');
     await page.goto('/payroll/my-payslips');
-    await page.getByRole('link', { name: 'View' }).first().click();
+    await page.getByRole('link', { name: 'View', exact: true }).first().click();
     await expect(page.getByText('NET PAY')).toBeVisible();
     await expect(page.getByText('SSS contribution')).toBeVisible();
     await expect(page.getByText('Withholding tax')).toBeVisible();
