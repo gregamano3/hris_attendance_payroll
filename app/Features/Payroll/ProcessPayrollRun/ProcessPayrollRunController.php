@@ -3,6 +3,7 @@
 namespace App\Features\Payroll\ProcessPayrollRun;
 
 use App\Features\Payroll\Compute\ComputePayrollRun;
+use App\Features\Payroll\Compute\ComputeThirteenthMonthRun;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Models\PayrollRun;
 use Illuminate\Http\RedirectResponse;
@@ -14,14 +15,14 @@ use Throwable;
  */
 class ProcessPayrollRunController
 {
-    public function compute(PayrollRun $run, ComputePayrollRun $compute): RedirectResponse
+    public function compute(PayrollRun $run, ComputePayrollRun $regular, ComputeThirteenthMonthRun $thirteenthMonth): RedirectResponse
     {
         if ($run->isLocked()) {
             return back()->with('error', 'Finalized payroll runs cannot be recomputed.');
         }
 
         try {
-            $run = $compute->handle($run);
+            $run = $run->isThirteenthMonth() ? $thirteenthMonth->handle($run) : $regular->handle($run);
         } catch (Throwable $e) {
             report($e);
 
