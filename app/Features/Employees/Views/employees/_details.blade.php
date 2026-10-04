@@ -45,6 +45,7 @@
                     @foreach (GovernmentId::cases() as $id)
                         <dt class="col-sm-4">{{ $id->label() }}</dt><dd class="col-sm-8">{{ $employee->governmentId($id) ?: '—' }}</dd>
                     @endforeach
+                    <dt class="col-sm-4">Bank account</dt><dd class="col-sm-8">{{ $employee->hasBankAccount() ? $employee->bank_name.' · '.$employee->bank_account_no : 'None (paid by cash/check)' }}</dd>
                     @isset($showUser)
                         <dt class="col-sm-4">User account</dt><dd class="col-sm-8">{{ $employee->user?->email ?? 'Not linked' }}</dd>
                     @endisset

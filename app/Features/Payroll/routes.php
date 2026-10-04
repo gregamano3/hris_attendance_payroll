@@ -1,6 +1,7 @@
 <?php
 
 use App\Features\Payroll\CreatePayrollRun\CreatePayrollRunController;
+use App\Features\Payroll\ExportBankFile\ExportBankFileController;
 use App\Features\Payroll\ExportRegister\ExportRegisterController;
 use App\Features\Payroll\ListPayrollRuns\ListPayrollRunsController;
 use App\Features\Payroll\ManageAdjustments\AdjustmentsController;
@@ -45,6 +46,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('runs', ListPayrollRunsController::class)->name('runs.index');
         Route::get('runs/{run}', ShowPayrollRunController::class)->name('runs.show');
         Route::get('runs/{run}/register.csv', ExportRegisterController::class)->name('runs.register');
+        Route::get('runs/{run}/bank.{format}', ExportBankFileController::class)->whereIn('format', ['csv', 'txt'])->name('runs.bank');
         Route::get('allowances', [RecurringEarningsController::class, 'index'])->name('allowances.index');
         Route::get('loans', [LoansController::class, 'index'])->name('loans.index');
         Route::get('loans/{loan}', [LoansController::class, 'show'])->name('loans.show');

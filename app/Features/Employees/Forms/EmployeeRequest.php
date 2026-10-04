@@ -26,6 +26,7 @@ class EmployeeRequest extends FormRequest
         }
 
         $normalized['basic_rate'] = str_replace(',', '', (string) $this->input('basic_rate'));
+        $normalized['bank_account_no'] = preg_replace('/[\s-]/', '', (string) $this->input('bank_account_no')) ?: null;
 
         $this->merge($normalized);
     }
@@ -63,6 +64,9 @@ class EmployeeRequest extends FormRequest
             'rate_type' => ['required', Rule::enum(RateType::class)],
             'basic_rate' => ['required', 'numeric', 'gt:0', 'max:99999999'],
             'is_minimum_wage_earner' => ['boolean'],
+            'bank_name' => ['nullable', 'required_with:bank_account_no', 'string', 'max:100'],
+            'bank_account_name' => ['nullable', 'string', 'max:255'],
+            'bank_account_no' => ['nullable', 'regex:/^\d{6,20}$/'],
         ];
 
         foreach (GovernmentId::cases() as $id) {
@@ -92,6 +96,7 @@ class EmployeeRequest extends FormRequest
             'hired_at' => 'hire date',
             'regularized_at' => 'regularization date',
             'separated_at' => 'separation date',
+            'bank_account_no' => 'bank account number',
         ];
 
         foreach (GovernmentId::cases() as $id) {

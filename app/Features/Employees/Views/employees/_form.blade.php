@@ -53,3 +53,12 @@
         @endforeach
     </div>
 </div>
+
+<div class="card">
+    <div class="card-header"><h3 class="card-title">Bank account (payroll credit)</h3></div>
+    <div class="card-body row g-3">
+        <x-form.input name="bank_name" label="Bank" :value="$employee->bank_name" col="col-md-4" placeholder="e.g. BDO, BPI, Metrobank" />
+        <x-form.input name="bank_account_name" label="Account name" :value="$employee->bank_account_name" col="col-md-4" />
+        <x-form.input name="bank_account_no" label="Account number" :value="$employee->bank_account_no" col="col-md-4" inputmode="numeric" />
+    </div>
+</div>

@@ -8,6 +8,12 @@
         @if ($run->payslips()->exists())
             <a href="{{ route('payroll.runs.register', $run) }}" class="btn btn-outline-secondary"><i class="bi bi-filetype-csv me-1"></i> Register</a>
         @endif
+        @if ($run->isLocked())
+            <div class="btn-group">
+                <a href="{{ route('payroll.runs.bank', [$run, 'csv']) }}" class="btn btn-outline-secondary"><i class="bi bi-bank me-1"></i> Bank file (CSV)</a>
+                <a href="{{ route('payroll.runs.bank', [$run, 'txt']) }}" class="btn btn-outline-secondary">TXT</a>
+            </div>
+        @endif
         @unless ($run->isLocked())
             @can('payroll.manage')
                 <form method="post" action="{{ route('payroll.runs.compute', $run) }}">
@@ -61,6 +67,13 @@
     @endif
     @if ($run->period_end->gte(today()) && ! $run->isLocked())
         <div class="alert alert-info">The period has not ended yet. Days still to come are not paid or deducted until you recompute.</div>
+    @endif
+
+    @if ($withoutBank->isNotEmpty())
+        <div class="alert alert-warning">
+            <strong>{{ $withoutBank->count() }} employee(s) have no bank account</strong> and are not in the bank file; pay them by cash or check:
+            {{ $withoutBank->map(fn ($p) => $p->employee_name.' ('.$p->net_pay->format().')')->implode(', ') }}
+        </div>
     @endif
 
     <div class="card">
