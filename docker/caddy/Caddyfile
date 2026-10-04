@@ -1,0 +1,29 @@
+# Automatic HTTPS for APP_DOMAIN (Let's Encrypt). Use "localhost" or ":80" to test without a domain.
+{$APP_DOMAIN:localhost} {
+    root * /var/www/html/public
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+        -Server
+    }
+
+    @immutable path /build/* /vendor/*
+    header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+    # Never serve dotfiles.
+    @hidden path */.*
+    respond @hidden 404
+
+    php_fastcgi app:9000
+    file_server
+
+    log {
+        output stdout
+        format json
+    }
+}
