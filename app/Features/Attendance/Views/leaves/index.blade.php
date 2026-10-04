@@ -35,7 +35,8 @@
                             <tbody>
                                 @forelse ($requests as $leave)
                                     <tr>
-                                        <td>{{ $leave->leaveType->name }}</td>
+                                        <td>{{ $leave->leaveType->name }}
+                                            @if ($leave->attachment_path)<a href="{{ route('leaves.attachment', $leave) }}" title="Supporting document"><i class="bi bi-paperclip"></i></a>@endif</td>
                                         <td class="text-nowrap">{{ $leave->start_date->format('M j') }} – {{ $leave->end_date->format('M j, Y') }}
                                             @if ($leave->day_part !== 'full')<span class="badge text-bg-light border">{{ $leave->dayPartLabel() }}</span>@endif</td>
                                         <td class="text-end">{{ (float) $leave->days }}</td>
@@ -63,7 +64,7 @@
             </div>
 
             <div class="col-lg-4">
-                <form method="post" action="{{ route('leaves.store') }}" class="card">
+                <form method="post" action="{{ route('leaves.store') }}" class="card" enctype="multipart/form-data">
                     @csrf
                     <div class="card-header"><h3 class="card-title">Request leave</h3></div>
                     <div class="card-body row g-3">
@@ -72,6 +73,12 @@
                         <x-form.input name="end_date" label="To" type="date" col="col-6" required />
                         <x-form.select name="day_part" label="Duration" :options="['full' => 'Whole day(s)', 'am' => 'Half day — morning', 'pm' => 'Half day — afternoon']" col="col-12" />
                         <x-form.textarea name="reason" label="Reason" rows="3" />
+                        <div class="col-12">
+                            <label for="attachment" class="form-label">Supporting document</label>
+                            <input type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png" class="form-control @error('attachment') is-invalid @enderror">
+                            <div class="form-text">e.g. medical certificate (PDF/JPG/PNG, max 10 MB). Required for some leave types.</div>
+                            @error('attachment') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                     </div>
                     <div class="card-footer"><button class="btn btn-primary">Submit request</button></div>
                 </form>

@@ -24,7 +24,8 @@
                     @forelse ($requests as $leave)
                         <tr>
                             <td>{{ $leave->employee->full_name }}</td>
-                            <td>{{ $leave->leaveType->name }}</td>
+                            <td>{{ $leave->leaveType->name }}
+                                @if ($leave->attachment_path)<a href="{{ route('leaves.attachment', $leave) }}" title="Supporting document"><i class="bi bi-paperclip"></i></a>@endif</td>
                             <td class="text-nowrap">{{ $leave->start_date->format('M j') }} – {{ $leave->end_date->format('M j, Y') }}
                                 @if ($leave->day_part !== 'full')<span class="badge text-bg-light border">{{ $leave->dayPartLabel() }}</span>@endif</td>
                             <td class="text-end">{{ (float) $leave->days }}</td>

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -20,6 +21,9 @@ use Illuminate\Support\Carbon;
  * @property string $day_part full | am | pm
  * @property string $days
  * @property string|null $reason
+ * @property string|null $attachment_path
+ * @property string|null $attachment_name
+ * @property string|null $attachment_mime
  * @property LeaveStatus $status
  * @property int|null $reviewed_by
  * @property Carbon|null $reviewed_at
@@ -28,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property-read LeaveType $leaveType
  * @property-read User|null $reviewer
  */
-#[Fillable(['employee_id', 'leave_type_id', 'start_date', 'end_date', 'day_part', 'days', 'reason', 'status', 'reviewed_by', 'reviewed_at', 'review_remarks'])]
+#[Fillable(['employee_id', 'leave_type_id', 'start_date', 'end_date', 'day_part', 'days', 'reason', 'attachment_path', 'attachment_name', 'attachment_mime', 'status', 'reviewed_by', 'reviewed_at', 'review_remarks'])]
 class LeaveRequest extends Model
 {
     use Auditable;
@@ -44,6 +48,11 @@ class LeaveRequest extends Model
             'reviewed_at' => 'datetime',
             'status' => LeaveStatus::class,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleted(fn (self $leave) => $leave->attachment_path && Storage::disk('local')->delete($leave->attachment_path));
     }
 
     public function dayPartLabel(): string

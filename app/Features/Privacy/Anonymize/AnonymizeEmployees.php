@@ -7,6 +7,7 @@ use App\Features\Payroll\Models\Payslip;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Retention policy: once the legal retention period after separation has
@@ -51,7 +52,10 @@ class AnonymizeEmployees
             ])->save();
 
             Payslip::query()->where('employee_id', $employee->id)->update(['employee_no' => "ANON-{$employee->id}", 'employee_name' => $label]);
-            DB::table('leave_requests')->where('employee_id', $employee->id)->update(['reason' => null]);
+            DB::table('leave_requests')->where('employee_id', $employee->id)->whereNotNull('attachment_path')->pluck('attachment_path')
+                ->each(fn (string $path) => Storage::disk('local')->delete($path));
+            DB::table('leave_requests')->where('employee_id', $employee->id)
+                ->update(['reason' => null, 'attachment_path' => null, 'attachment_name' => null, 'attachment_mime' => null]);
             DB::table('overtime_requests')->where('employee_id', $employee->id)->update(['reason' => '[removed]']);
             DB::table('time_logs')->where('employee_id', $employee->id)->update(['ip_address' => null, 'remarks' => null]);
         });

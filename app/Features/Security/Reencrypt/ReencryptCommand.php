@@ -82,7 +82,14 @@ class ReencryptCommand extends Command
             $counts['documents']++;
         });
 
-        $this->info("Re-encrypted {$counts['employees']} employees, {$counts['users']} 2FA secrets and {$counts['documents']} documents.");
+        DB::table('leave_requests')->whereNotNull('attachment_path')->pluck('attachment_path')->each(function (string $path) use (&$counts) {
+            if (Storage::disk('local')->exists($path)) {
+                EncryptedFiles::put('local', $path, EncryptedFiles::get('local', $path));
+                $counts['documents']++;
+            }
+        });
+
+        $this->info("Re-encrypted {$counts['employees']} employees, {$counts['users']} 2FA secrets and {$counts['documents']} documents and attachments.");
 
         return self::SUCCESS;
     }

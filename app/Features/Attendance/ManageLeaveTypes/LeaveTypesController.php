@@ -40,6 +40,7 @@ class LeaveTypesController
             'days_per_year' => ['required', 'integer', 'min:0', 'max:366'],
             'accrual_per_month' => ['required', 'numeric', 'min:0', 'max:31'],
             'carry_over_cap' => ['required', 'integer', 'min:0', 'max:366'],
+            'attachment_required_after_days' => ['nullable', 'integer', 'min:0', 'max:366'],
             'is_paid' => ['boolean'],
             'is_convertible' => ['boolean'],
         ]);
