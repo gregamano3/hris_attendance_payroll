@@ -860,6 +860,12 @@ return [
             'can' => 'review-leaves',
         ],
         [
+            'text' => 'Leave calendar',
+            'route' => 'leaves.calendar',
+            'icon' => 'bi bi-calendar3',
+            'can' => 'review-leaves',
+        ],
+        [
             'text' => 'My overtime',
             'route' => 'overtime.index',
             'icon' => 'bi bi-hourglass-split',

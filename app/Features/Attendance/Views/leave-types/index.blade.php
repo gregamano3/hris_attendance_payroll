@@ -11,7 +11,7 @@
     <div class="card">
         <div class="card-body p-0 table-responsive">
             <table class="table table-sm mb-0 align-middle">
-                <thead><tr><th>Code</th><th>Name</th><th>Days / year</th><th>Accrual / month</th><th>Carry-over cap</th><th>Paid</th><th>Convertible</th><th></th></tr></thead>
+                <thead><tr><th>Code</th><th>Name</th><th>Days / year</th><th>Accrual / month</th><th>Carry-over cap</th><th>Document after (days)</th><th>Paid</th><th>Convertible</th><th></th></tr></thead>
                 <tbody>
                     @foreach ($types as $type)
                         <tr>
@@ -22,6 +22,7 @@
                                 <td><input type="number" name="days_per_year" value="{{ $type->days_per_year }}" min="0" class="form-control form-control-sm" style="width:6rem" aria-label="Days per year"></td>
                                 <td><input type="number" step="0.01" name="accrual_per_month" value="{{ (float) $type->accrual_per_month }}" min="0" class="form-control form-control-sm" style="width:6rem" aria-label="Accrual per month"></td>
                                 <td><input type="number" name="carry_over_cap" value="{{ $type->carry_over_cap }}" min="0" class="form-control form-control-sm" style="width:6rem" aria-label="Carry-over cap"></td>
+                                <td><input type="number" name="attachment_required_after_days" value="{{ $type->attachment_required_after_days }}" min="0" class="form-control form-control-sm" style="width:6rem" aria-label="Document required after days" placeholder="Never"></td>
                                 <td><input type="hidden" name="is_paid" value="0"><input type="checkbox" class="form-check-input" name="is_paid" value="1" @checked($type->is_paid) aria-label="Paid"></td>
                                 <td><input type="hidden" name="is_convertible" value="0"><input type="checkbox" class="form-check-input" name="is_convertible" value="1" @checked($type->is_convertible) aria-label="Convertible"></td>
                                 <td><button class="btn btn-sm btn-outline-primary">Save</button></td>

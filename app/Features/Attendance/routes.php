@@ -2,6 +2,7 @@
 
 use App\Features\Attendance\Clock\ClockController;
 use App\Features\Attendance\ImportTimeLogs\ImportTimeLogsController;
+use App\Features\Attendance\LeaveCalendar\LeaveCalendarController;
 use App\Features\Attendance\ManageDevices\DevicesController;
 use App\Features\Attendance\ManageHolidays\HolidaysController;
 use App\Features\Attendance\ManageLeaveTypes\LeaveTypesController;
@@ -58,8 +59,12 @@ Route::middleware('auth')->group(function () {
             Route::patch('{leaveRequest}/cancel', [LeaveRequestsController::class, 'cancel'])->name('cancel');
         });
 
+        // Access is checked inside: the requester or their approvers.
+        Route::get('{leaveRequest}/attachment', [LeaveRequestsController::class, 'attachment'])->name('attachment');
+
         Route::middleware('can:review-leaves')->group(function () {
             Route::get('review', [ReviewLeavesController::class, 'index'])->name('review');
+            Route::get('calendar', LeaveCalendarController::class)->name('calendar');
             Route::patch('{leaveRequest}/review', [ReviewLeavesController::class, 'update'])->name('review.update');
         });
     });

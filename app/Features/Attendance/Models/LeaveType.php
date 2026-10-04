@@ -15,8 +15,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $days_per_year
  * @property string $accrual_per_month
  * @property int $carry_over_cap
+ * @property int|null $attachment_required_after_days
  */
-#[Fillable(['code', 'name', 'is_paid', 'is_convertible', 'days_per_year', 'accrual_per_month', 'carry_over_cap'])]
+#[Fillable(['code', 'name', 'is_paid', 'is_convertible', 'days_per_year', 'accrual_per_month', 'carry_over_cap', 'attachment_required_after_days'])]
 class LeaveType extends Model
 {
     use Auditable;
@@ -37,6 +38,11 @@ class LeaveType extends Model
     /**
      * Credits are earned monthly instead of granted at the start of the year.
      */
+    public function requiresAttachment(float $days): bool
+    {
+        return $this->attachment_required_after_days !== null && $days > $this->attachment_required_after_days;
+    }
+
     public function accrues(): bool
     {
         return (float) $this->accrual_per_month > 0;
