@@ -37,6 +37,14 @@ return [
         'bank_account_no' => env('EMPLOYER_BANK_ACCOUNT_NO', ''),
     ],
 
+    'privacy' => [
+        // Years after separation before personal data is anonymized
+        // (privacy:anonymize, monthly). Keep at least the longest legal
+        // retention period that applies to you (e.g. BIR books of accounts).
+        'retention_years' => (int) env('PRIVACY_RETENTION_YEARS', 10),
+        'dpo_email' => env('PRIVACY_DPO_EMAIL', ''),
+    ],
+
     'security' => [
         // Key for the blind indexes of encrypted columns (government IDs).
         // Generate with: php -r "echo bin2hex(random_bytes(32));"

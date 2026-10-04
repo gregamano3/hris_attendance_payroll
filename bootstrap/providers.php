@@ -8,6 +8,7 @@ use App\Features\Dashboard\DashboardServiceProvider;
 use App\Features\Employees\EmployeesServiceProvider;
 use App\Features\Health\HealthServiceProvider;
 use App\Features\Payroll\PayrollServiceProvider;
+use App\Features\Privacy\PrivacyServiceProvider;
 use App\Features\Security\SecurityServiceProvider;
 use App\Features\Users\UsersServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -26,6 +27,7 @@ return [
     EmployeesServiceProvider::class,
     HealthServiceProvider::class,
     PayrollServiceProvider::class,
+    PrivacyServiceProvider::class,
     SecurityServiceProvider::class,
     UsersServiceProvider::class,
 ];

@@ -794,6 +794,11 @@ return [
             'route' => 'my-profile',
             'icon' => 'bi bi-person-badge',
         ],
+        [
+            'text' => 'My privacy',
+            'route' => 'privacy.mine',
+            'icon' => 'bi bi-incognito',
+        ],
         ['header' => 'HRIS', 'can' => 'employees.view'],
         [
             'text' => 'Employees',
@@ -946,6 +951,19 @@ return [
             'icon' => 'bi bi-activity',
             'can' => 'viewHorizon',
             'target' => '_blank',
+        ],
+        [
+            'text' => 'Privacy requests',
+            'route' => 'privacy.requests.index',
+            'icon' => 'bi bi-shield-check',
+            'can' => 'users.manage',
+            'active' => ['privacy/requests*'],
+        ],
+        [
+            'text' => 'Privacy notices',
+            'route' => 'privacy.notices.index',
+            'icon' => 'bi bi-file-earmark-lock',
+            'can' => 'users.manage',
         ],
         [
             'text' => 'Audit log',
