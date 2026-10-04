@@ -6,6 +6,7 @@ use App\Features\Attendance\Models\AttendanceDay;
 use App\Features\Attendance\Queries\AttendanceSummary;
 use App\Features\Employees\Enums\RateType;
 use App\Features\Employees\Models\Employee;
+use App\Features\Employees\Queries\CompensationHistory;
 use App\Features\Payroll\Enums\LoanStatus;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Models\Loan;
@@ -28,6 +29,7 @@ class ComputePayrollRun
     public function __construct(
         private AttendanceSummary $attendance,
         private StatutoryRates $rates,
+        private CompensationHistory $compensation,
     ) {}
 
     public function handle(PayrollRun $run): PayrollRun
@@ -48,7 +50,7 @@ class ComputePayrollRun
 
         $employees = $this->eligibleEmployees($run);
 
-        DB::transaction(function () use ($run, $period, $calculator, $adjustments, $recurring, $loans, $employees) {
+        DB::transaction(function () use ($run, $calculator, $adjustments, $recurring, $loans, $employees) {
             $run->payslips()->delete();
             $total = max(1, $employees->count());
 
@@ -58,21 +60,11 @@ class ComputePayrollRun
                     $this->reportProgress($run, (int) floor($index / $total * 100));
                 }
 
-                $days = $this->attendance->days($employee->id, $period)
-                    ->filter(fn (AttendanceDay $day) => $day->date->gte($employee->hired_at)
-                        && ($employee->separated_at === null || $day->date->lte($employee->separated_at)));
-
-                $result = $calculator->compute(new PayslipInput(
-                    monthlyRated: $employee->rate_type === RateType::Monthly,
-                    basicRate: $employee->basic_rate,
-                    days: $days->map(fn (AttendanceDay $day) => $this->toDayData($day))->values()->all(),
-                    adjustments: [
-                        ...$this->recurringFor($recurring->get($employee->id, collect())),
-                        ...$this->adjustmentsFor($adjustments->get($employee->id, collect())),
-                        ...$this->loansFor($loans->get($employee->id, collect())),
-                    ],
-                    minimumWageEarner: $employee->is_minimum_wage_earner,
-                ));
+                $result = $calculator->compute($this->inputFor($run, $employee, [
+                    ...$this->recurringFor($recurring->get($employee->id, collect())),
+                    ...$this->adjustmentsFor($adjustments->get($employee->id, collect())),
+                    ...$this->loansFor($loans->get($employee->id, collect())),
+                ]));
 
                 $this->store($run, $employee, $result);
             }
@@ -93,6 +85,39 @@ class ComputePayrollRun
         });
 
         return $run->refresh();
+    }
+
+    /**
+     * Attendance-based earnings of an employee for a run with today's salary
+     * history (no adjustments, allowances or loans). Used for back pay.
+     */
+    public function earningsFor(PayrollRun $run, Employee $employee): PayslipResult
+    {
+        return $this->rates->calculatorFor($run->period_end)->compute($this->inputFor($run, $employee, []));
+    }
+
+    /**
+     * @param  list<array{kind: string, label: string, amount: Money, taxable: bool, code?: string}>  $adjustments
+     */
+    private function inputFor(PayrollRun $run, Employee $employee, array $adjustments): PayslipInput
+    {
+        $period = $run->period();
+        $days = $this->attendance->days($employee->id, $period)
+            ->filter(fn (AttendanceDay $day) => $day->date->gte($employee->hired_at)
+                && ($employee->separated_at === null || $day->date->lte($employee->separated_at)));
+        $segments = $this->compensation->segments($employee, $period);
+        $latest = end($segments);
+
+        return new PayslipInput(
+            monthlyRated: ($latest ? $latest['rate_type'] : $employee->rate_type->value) === RateType::Monthly->value,
+            basicRate: $latest ? $latest['rate'] : $employee->basic_rate,
+            days: $days->map(fn (AttendanceDay $day) => $this->toDayData($day))->values()->all(),
+            adjustments: $adjustments,
+            minimumWageEarner: $employee->is_minimum_wage_earner,
+            rateSegments: array_map(fn (array $s) => ['from' => $s['from'], 'rate' => $s['rate']], $segments),
+            periodFrom: $period->from->toDateString(),
+            periodTo: $period->to->toDateString(),
+        );
     }
 
     /**
@@ -148,12 +173,13 @@ class ComputePayrollRun
      */
     private function adjustmentsFor(Collection $adjustments): array
     {
-        return $adjustments->map(fn (PayrollAdjustment $a) => [
+        return $adjustments->map(fn (PayrollAdjustment $a) => array_filter([
             'kind' => $a->kind,
             'label' => $a->label,
             'amount' => $a->amount,
             'taxable' => $a->taxable,
-        ])->values()->all();
+            'code' => $a->code,
+        ], fn ($v) => $v !== null))->values()->all();
     }
 
     /**
