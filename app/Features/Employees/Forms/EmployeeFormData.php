@@ -27,6 +27,8 @@ class EmployeeFormData
             'employee' => $employee,
             'departments' => $this->options->departments(),
             'positions' => $this->options->positions(),
+            'branches' => $this->options->branches(),
+            'costCenters' => $this->options->costCenters(),
             'users' => User::query()
                 ->whereNotIn('id', Employee::query()->whereNotNull('user_id')->whereKeyNot($employee->getKey() ?? 0)->select('user_id'))
                 ->orderBy('name')

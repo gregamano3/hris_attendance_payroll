@@ -60,7 +60,7 @@ class ComputeAttendanceDay
             shift: $shift,
             timeIns: $logs->where('type', TimeLogType::In)->pluck('logged_at')->values()->all(),
             timeOuts: $logs->where('type', TimeLogType::Out)->pluck('logged_at')->values()->all(),
-            holiday: $this->holidays->typeOn($date),
+            holiday: $this->holidays->typeOn($date, $this->branchOf($employeeId)),
             leaveRequestId: $leave?->id,
             approvedOvertimeMinutes: $approvedOvertime,
             halfDayLeave: $leave !== null && $leave->day_part !== 'full' ? $leave->day_part : null,
@@ -87,6 +87,19 @@ class ComputeAttendanceDay
         return $day;
     }
 
+    /** @var array<int, int|null> */
+    private array $branches = [];
+
+    private function branchOf(int $employeeId): ?int
+    {
+        if (! array_key_exists($employeeId, $this->branches)) {
+            $branch = Employee::withTrashed()->whereKey($employeeId)->value('branch_id');
+            $this->branches[$employeeId] = $branch === null ? null : (int) $branch;
+        }
+
+        return $this->branches[$employeeId];
+    }
+
     private function holidayPayEligible(int $employeeId, Carbon $holiday): bool
     {
         if (! config('hris.payroll.holiday_eligibility', true)) {
@@ -100,7 +113,7 @@ class ComputeAttendanceDay
                 return true; // no work day before the holiday since hire
             }
 
-            if (! $this->shifts->forEmployee($employeeId, $date)->isWorkDay($date) || $this->holidays->typeOn($date) !== null) {
+            if (! $this->shifts->forEmployee($employeeId, $date)->isWorkDay($date) || $this->holidays->typeOn($date, $this->branchOf($employeeId)) !== null) {
                 continue;
             }
 
@@ -117,7 +130,7 @@ class ComputeAttendanceDay
     private function refreshFollowingHolidays(int $employeeId, Carbon $date): void
     {
         for ($next = $date->copy()->addDay(), $i = 0; $i < 7; $next->addDay(), $i++) {
-            $isHoliday = $this->holidays->typeOn($next) !== null;
+            $isHoliday = $this->holidays->typeOn($next, $this->branchOf($employeeId)) !== null;
 
             if (! $isHoliday && $this->shifts->forEmployee($employeeId, $next)->isWorkDay($next)) {
                 return; // reached the next work day

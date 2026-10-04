@@ -7,6 +7,7 @@ use App\Features\Attendance\Models\LeaveCredit;
 use App\Features\Attendance\Models\LeaveRequest;
 use App\Features\Attendance\Models\LeaveType;
 use App\Features\Attendance\Models\Shift;
+use App\Features\Employees\Models\Employee;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -64,11 +65,13 @@ class LeaveBalances
     public function workingDays(int $employeeId, Carbon $from, Carbon $to): int
     {
         $days = 0;
+        $branchId = Employee::withTrashed()->whereKey($employeeId)->value('branch_id');
+        $branchId = $branchId === null ? null : (int) $branchId;
 
         for ($date = $from->copy()->startOfDay(); $date->lte($to); $date->addDay()) {
             $shift = $this->shifts->forEmployee($employeeId, $date);
 
-            if ($this->isWorkingDay($shift, $date)) {
+            if ($this->isWorkingDay($shift, $date, $branchId)) {
                 $days++;
             }
         }
@@ -76,8 +79,8 @@ class LeaveBalances
         return $days;
     }
 
-    private function isWorkingDay(Shift $shift, Carbon $date): bool
+    private function isWorkingDay(Shift $shift, Carbon $date, ?int $branchId): bool
     {
-        return $shift->isWorkDay($date) && $this->holidays->typeOn($date) === null;
+        return $shift->isWorkDay($date) && $this->holidays->typeOn($date, $branchId) === null;
     }
 }

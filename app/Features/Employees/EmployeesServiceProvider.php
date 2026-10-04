@@ -3,7 +3,9 @@
 namespace App\Features\Employees;
 
 use App\Features\Employees\ManageCompensation\ApplyCompensationChangesCommand;
+use App\Features\Employees\Models\Branch;
 use App\Features\Employees\Models\CompensationChange;
+use App\Features\Employees\Models\CostCenter;
 use App\Features\Employees\Models\Department;
 use App\Features\Employees\Models\Employee;
 use App\Features\Employees\Models\Position;
@@ -16,7 +18,7 @@ class EmployeesServiceProvider extends FeatureServiceProvider
     protected function bootFeature(): void
     {
         // Flush cached select options whenever the reference data changes.
-        foreach ([Department::class, Position::class] as $model) {
+        foreach ([Department::class, Position::class, Branch::class, CostCenter::class] as $model) {
             $model::saved(fn () => EmployeeOptions::flush());
             $model::deleted(fn () => EmployeeOptions::flush());
         }

@@ -4,6 +4,7 @@ namespace App\Features\Attendance\ManageHolidays;
 
 use App\Features\Attendance\Enums\HolidayType;
 use App\Features\Attendance\Models\Holiday;
+use App\Features\Employees\Models\Branch;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,8 +18,9 @@ class HolidaysController
 
         return view('attendance::holidays.index', [
             'year' => $year,
-            'holidays' => Holiday::query()->whereYear('date', $year)->orderBy('date')->get(),
+            'holidays' => Holiday::query()->with('branch')->whereYear('date', $year)->orderBy('date')->get(),
             'types' => HolidayType::options(),
+            'branches' => Branch::query()->orderBy('name')->pluck('name', 'id')->all(),
         ]);
     }
 
@@ -31,7 +33,11 @@ class HolidaysController
 
     public function edit(Holiday $holiday): View
     {
-        return view('attendance::holidays.edit', ['holiday' => $holiday, 'types' => HolidayType::options()]);
+        return view('attendance::holidays.edit', [
+            'holiday' => $holiday,
+            'types' => HolidayType::options(),
+            'branches' => Branch::query()->orderBy('name')->pluck('name', 'id')->all(),
+        ]);
     }
 
     public function update(Request $request, Holiday $holiday): RedirectResponse
@@ -53,10 +59,14 @@ class HolidaysController
      */
     private function validated(Request $request, ?Holiday $holiday = null): array
     {
+        $branchId = $request->integer('branch_id') ?: null;
+
         return $request->validate([
-            'date' => ['required', 'date', Rule::unique('holidays')->ignore($holiday)],
+            'date' => ['required', 'date', Rule::unique('holidays')->ignore($holiday)
+                ->where(fn ($q) => $branchId === null ? $q->whereNull('branch_id') : $q->where('branch_id', $branchId))],
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(HolidayType::class)],
+            'branch_id' => ['nullable', 'integer', Rule::exists('branches', 'id')],
         ]);
     }
 }
