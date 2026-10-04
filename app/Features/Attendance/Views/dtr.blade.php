@@ -20,7 +20,11 @@
     @if ($employee)
         <div class="d-flex justify-content-between align-items-baseline mb-3">
             <h2 class="fs-5 mb-0">{{ $employee->full_name }} <small class="text-body-secondary">{{ $employee->employee_no }}</small></h2>
-            <span class="text-body-secondary">{{ $period->label() }}</span>
+            <span class="text-body-secondary">
+                {{ $period->label() }}
+                <a href="{{ route('attendance.dtr.pdf', ['employee' => $employee, 'from' => $period->from->toDateString(), 'to' => $period->to->toDateString()]) }}"
+                    class="btn btn-sm btn-outline-secondary ms-2"><i class="bi bi-printer me-1"></i> Print DTR</a>
+            </span>
         </div>
         @include('attendance::_dtr-table')
     @endif
