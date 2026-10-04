@@ -21,5 +21,6 @@ pest()->extend(TestCase::class)
  */
 function userWithRole(Role $role, array $attributes = []): User
 {
-    return User::factory()->withRole($role)->create($attributes);
+    // Reload so the instance has every column, like a user resolved from the session.
+    return User::factory()->withRole($role)->create($attributes)->fresh();
 }

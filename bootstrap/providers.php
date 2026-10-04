@@ -1,5 +1,6 @@
 <?php
 
+use App\Features\Account\AccountServiceProvider;
 use App\Features\Attendance\AttendanceServiceProvider;
 use App\Features\Auth\AuthServiceProvider;
 use App\Features\Dashboard\DashboardServiceProvider;
@@ -13,6 +14,7 @@ return [
     AppServiceProvider::class,
 
     // Feature slices
+    AccountServiceProvider::class,
     AttendanceServiceProvider::class,
     AuthServiceProvider::class,
     DashboardServiceProvider::class,
