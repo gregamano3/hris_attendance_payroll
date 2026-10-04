@@ -61,6 +61,21 @@ class PayrollSeeder extends Seeder
         ['666667', null, '183541.80', 0.35],
     ];
 
+    /**
+     * Annual income tax table (TRAIN law, 2023 onwards), used for the
+     * year-end annualization on BIR Form 2316 and the alphalist.
+     *
+     * @var list<array{0: string, 1: string|null, 2: string, 3: float}>
+     */
+    public const TAX_ANNUAL_2023 = [
+        ['0', '250000', '0', 0.0],
+        ['250000', '400000', '0', 0.15],
+        ['400000', '800000', '22500', 0.20],
+        ['800000', '2000000', '102500', 0.25],
+        ['2000000', '8000000', '402500', 0.30],
+        ['8000000', null, '2202500', 0.35],
+    ];
+
     public function run(): void
     {
         $schemes = [
@@ -76,11 +91,17 @@ class PayrollSeeder extends Seeder
             );
         }
 
-        if (TaxBracket::query()->exists()) {
-            return;
-        }
+        $tables = [
+            'semi_monthly' => self::TAX_SEMI_MONTHLY_2023,
+            'monthly' => self::TAX_MONTHLY_2023,
+            'annual' => self::TAX_ANNUAL_2023,
+        ];
 
-        foreach (['semi_monthly' => self::TAX_SEMI_MONTHLY_2023, 'monthly' => self::TAX_MONTHLY_2023] as $frequency => $brackets) {
+        foreach ($tables as $frequency => $brackets) {
+            if (TaxBracket::query()->where('frequency', $frequency)->exists()) {
+                continue;
+            }
+
             foreach ($brackets as [$lower, $upper, $base, $rate]) {
                 TaxBracket::query()->create([
                     'effective_from' => '2023-01-01',

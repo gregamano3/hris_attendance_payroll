@@ -8,6 +8,7 @@ use App\Features\Payroll\ManageLoans\LoansController;
 use App\Features\Payroll\ManageRecurringEarnings\RecurringEarningsController;
 use App\Features\Payroll\ManageStatutoryRates\StatutoryRatesController;
 use App\Features\Payroll\ProcessPayrollRun\ProcessPayrollRunController;
+use App\Features\Payroll\Reports\ReportsController;
 use App\Features\Payroll\ShowMyPayslips\ShowMyPayslipsController;
 use App\Features\Payroll\ShowPayrollRun\ShowPayrollRunController;
 use App\Features\Payroll\ShowPayslip\ShowPayslipController;
@@ -19,6 +20,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
     // Access is checked inside: payroll staff or the employee owning a finalized payslip.
     Route::get('payslips/{payslip}', [ShowPayslipController::class, 'show'])->name('payslips.show');
     Route::get('payslips/{payslip}/pdf', [ShowPayslipController::class, 'pdf'])->name('payslips.pdf');
+    Route::get('reports/2316/{year}/{employee}', [ReportsController::class, 'certificate'])->whereNumber('year')->name('reports.2316');
 
     Route::middleware('can:payroll.manage')->group(function () {
         Route::get('runs/create', [CreatePayrollRunController::class, 'create'])->name('runs.create');
@@ -46,6 +48,9 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('allowances', [RecurringEarningsController::class, 'index'])->name('allowances.index');
         Route::get('loans', [LoansController::class, 'index'])->name('loans.index');
         Route::get('loans/{loan}', [LoansController::class, 'show'])->name('loans.show');
+        Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
+        Route::get('reports/alphalist.csv', [ReportsController::class, 'alphalist'])->name('reports.alphalist');
+        Route::get('reports/{agency}.csv', [ReportsController::class, 'contributions'])->name('reports.contributions');
     });
 
     Route::middleware('can:settings.manage')->group(function () {

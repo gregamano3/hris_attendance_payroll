@@ -908,6 +908,12 @@ return [
             'active' => ['payroll/loans*'],
         ],
         [
+            'text' => 'Government reports',
+            'route' => 'payroll.reports.index',
+            'icon' => 'bi bi-file-earmark-spreadsheet',
+            'can' => 'payroll.view',
+        ],
+        [
             'text' => 'Statutory rates',
             'route' => 'payroll.statutory.index',
             'icon' => 'bi bi-bank',

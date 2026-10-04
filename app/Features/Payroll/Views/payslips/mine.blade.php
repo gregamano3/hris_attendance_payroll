@@ -6,6 +6,12 @@
     @if (! $employee)
         <div class="callout callout-info">Your account is not linked to an employee record. Please contact Human Resources.</div>
     @else
+        <p>
+            BIR Form 2316:
+            @foreach (range(today()->year, today()->year - 2) as $certificateYear)
+                <a href="{{ route('payroll.reports.2316', [$certificateYear, $employee]) }}" class="btn btn-sm btn-outline-secondary">{{ $certificateYear }}</a>
+            @endforeach
+        </p>
         <div class="card">
             <div class="card-body p-0 table-responsive">
                 <table class="table table-hover mb-0 align-middle">
