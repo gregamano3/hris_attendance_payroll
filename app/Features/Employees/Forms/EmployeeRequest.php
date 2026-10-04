@@ -95,7 +95,14 @@ class EmployeeRequest extends FormRequest
                         $fail("The {$id->label()} must have ".implode(' or ', $id->lengths()).' digits.');
                     }
                 },
-                Rule::unique('employees', $id->value)->ignore($employee),
+                // Encrypted column: uniqueness is checked on its blind index.
+                function (string $attribute, mixed $value, \Closure $fail) use ($id, $employee) {
+                    $existing = Employee::findByGovernmentId($id, (string) $value);
+
+                    if ($existing !== null && ! $existing->is($employee)) {
+                        $fail("The {$id->label()} has already been taken.");
+                    }
+                },
             ];
         }
 

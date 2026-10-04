@@ -21,11 +21,12 @@ use Illuminate\Support\Facades\Storage;
  * @property string $original_name
  * @property string $mime_type
  * @property int $size
+ * @property bool $is_encrypted
  * @property int|null $uploaded_by
  * @property-read Employee $employee
  * @property-read User|null $uploader
  */
-#[Fillable(['employee_id', 'category', 'title', 'path', 'original_name', 'mime_type', 'size', 'uploaded_by'])]
+#[Fillable(['employee_id', 'category', 'title', 'path', 'original_name', 'mime_type', 'size', 'is_encrypted', 'uploaded_by'])]
 class EmployeeDocument extends Model
 {
     use Auditable;
@@ -42,7 +43,7 @@ class EmployeeDocument extends Model
      */
     protected function casts(): array
     {
-        return ['category' => DocumentCategory::class, 'size' => 'integer'];
+        return ['category' => DocumentCategory::class, 'size' => 'integer', 'is_encrypted' => 'boolean'];
     }
 
     /**

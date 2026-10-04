@@ -21,6 +21,13 @@ return [
     // additionally limited to 5 per account).
     'login_throttle_per_minute' => (int) (env('LOGIN_THROTTLE') ?: 10),
 
+    'security' => [
+        // Key for the blind indexes of encrypted columns (government IDs).
+        // Generate with: php -r "echo bin2hex(random_bytes(32));"
+        // Keep it stable: changing it requires `php artisan security:reencrypt`.
+        'blind_index_key' => env('BLIND_INDEX_KEY', ''),
+    ],
+
     // Comma separated roles that must enable two-factor authentication,
     // e.g. "admin,payroll". Leave empty to keep 2FA optional for everyone.
     'require_two_factor_roles' => env('REQUIRE_2FA_ROLES', ''),

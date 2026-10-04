@@ -44,7 +44,8 @@
     40 => 'App\\Features\\Employees\\EmployeesServiceProvider',
     41 => 'App\\Features\\Health\\HealthServiceProvider',
     42 => 'App\\Features\\Payroll\\PayrollServiceProvider',
-    43 => 'App\\Features\\Users\\UsersServiceProvider',
+    43 => 'App\\Features\\Security\\SecurityServiceProvider',
+    44 => 'App\\Features\\Users\\UsersServiceProvider',
   ),
   'eager' => 
   array (
@@ -76,7 +77,8 @@
     25 => 'App\\Features\\Employees\\EmployeesServiceProvider',
     26 => 'App\\Features\\Health\\HealthServiceProvider',
     27 => 'App\\Features\\Payroll\\PayrollServiceProvider',
-    28 => 'App\\Features\\Users\\UsersServiceProvider',
+    28 => 'App\\Features\\Security\\SecurityServiceProvider',
+    29 => 'App\\Features\\Users\\UsersServiceProvider',
   ),
   'deferred' => 
   array (
