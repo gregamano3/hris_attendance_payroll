@@ -6,6 +6,7 @@ use App\Features\Payroll\Enums\LoanStatus;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Enums\PayrollRunType;
 use App\Features\Payroll\Enums\TaxTreatment;
+use App\Features\Payroll\Models\DeMinimisBenefit;
 use App\Features\Payroll\Models\Loan;
 use App\Features\Payroll\Models\PayrollRun;
 use App\Features\Payroll\Models\Payslip;
@@ -43,6 +44,7 @@ it('manages recurring allowances', function () {
     $this->actingAs($this->officer)->post('/payroll/allowances', [
         'employee_id' => $this->employee->id, 'label' => 'Rice subsidy', 'amount' => '1000',
         'tax_treatment' => 'de_minimis', 'starts_on' => '2026-11-01',
+        'de_minimis_benefit_id' => DeMinimisBenefit::query()->where('code', 'RICE')->value('id'),
     ])->assertSessionHas('success');
 
     $earning = RecurringEarning::query()->sole();

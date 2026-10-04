@@ -19,7 +19,7 @@
                     @forelse ($runs as $run)
                         <tr>
                             <td><a href="{{ route('payroll.runs.show', $run) }}">{{ $run->name }}</a>
-                                @if ($run->isThirteenthMonth())<span class="badge text-bg-light border">13th month</span>@endif</td>
+                                @if ($run->isThirteenthMonth())<span class="badge text-bg-light border">13th month</span>@elseif ($run->frequency->value !== 'semi_monthly')<span class="badge text-bg-light border">{{ $run->frequency->label() }}</span>@endif</td>
                             <td>{{ $run->period()->label() }}</td>
                             <td>{{ $run->pay_date->format('M j, Y') }}</td>
                             <td class="text-end">{{ $run->employee_count }}</td>

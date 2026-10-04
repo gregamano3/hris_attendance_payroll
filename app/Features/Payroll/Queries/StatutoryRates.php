@@ -7,6 +7,7 @@ use App\Features\Payroll\Compute\PayslipCalculator;
 use App\Features\Payroll\Compute\PhilHealthCalculator;
 use App\Features\Payroll\Compute\SssCalculator;
 use App\Features\Payroll\Compute\WithholdingTaxCalculator;
+use App\Features\Payroll\Enums\PayFrequency;
 use App\Features\Payroll\Enums\StatutoryScheme;
 use App\Features\Payroll\Models\StatutoryRate;
 use App\Features\Payroll\Models\TaxBracket;
@@ -66,7 +67,7 @@ class StatutoryRates
     /**
      * A payslip calculator wired with the rates effective on the given date.
      */
-    public function calculatorFor(Carbon $date): PayslipCalculator
+    public function calculatorFor(Carbon $date, PayFrequency $frequency = PayFrequency::SemiMonthly): PayslipCalculator
     {
         $config = config('hris.payroll');
 
@@ -74,10 +75,11 @@ class StatutoryRates
             new SssCalculator($this->parameters(StatutoryScheme::Sss, $date)),
             new PhilHealthCalculator($this->parameters(StatutoryScheme::PhilHealth, $date)),
             new PagIbigCalculator($this->parameters(StatutoryScheme::PagIbig, $date)),
-            new WithholdingTaxCalculator($this->taxBrackets($config['tax_frequency'], $date)),
+            new WithholdingTaxCalculator($this->taxBrackets($frequency->taxTable(), $date)),
             daysPerYear: (int) $config['days_per_year'],
             hoursPerDay: (int) $config['hours_per_day'],
-            contributionFraction: (float) $config['contribution_fraction'],
+            contributionFraction: $frequency->monthlyShare(),
+            salaryFraction: $frequency->monthlyShare(),
             multipliers: array_map('floatval', $config['multipliers']),
             overtimeRegular: (float) $config['overtime_regular'],
             overtimePremium: (float) $config['overtime_premium'],

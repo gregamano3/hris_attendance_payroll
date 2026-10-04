@@ -240,3 +240,14 @@ it('pro-rates a salary change inside the period', function () {
         ->and($result->amountOf('SSS')->toDecimal())->toBe('875.00')         // contributions on the new rate
         ->and($result->warnings)->toContain('Pro-rated for a salary change within the period.');
 });
+
+it('pays night differential on overtime at the overtime rate', function () {
+    // ₱800/day = ₱100/h. 1h of OT after 22:00 on an ordinary day: 10% × 125% = ₱12.50.
+    $result = payslipCalculator()->compute(new PayslipInput(
+        monthlyRated: false,
+        basicRate: Money::ofPesos(800),
+        days: [new DayData('2026-10-05', DayData::PRESENT, workedMinutes: 480, overtimeMinutes: 360, nightDiffMinutes: 60, nightDiffOvertimeMinutes: 60)],
+    ));
+
+    expect($result->amountOf('NIGHT_DIFF')->toDecimal())->toBe('12.50');
+});

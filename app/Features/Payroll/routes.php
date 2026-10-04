@@ -2,11 +2,13 @@
 
 use App\Features\Payroll\ComputeBackPay\BackPayController;
 use App\Features\Payroll\CreatePayrollRun\CreatePayrollRunController;
+use App\Features\Payroll\DistributeServiceCharge\ServiceChargeController;
 use App\Features\Payroll\EFiling\EFilingController;
 use App\Features\Payroll\ExportBankFile\ExportBankFileController;
 use App\Features\Payroll\ExportRegister\ExportRegisterController;
 use App\Features\Payroll\ListPayrollRuns\ListPayrollRunsController;
 use App\Features\Payroll\ManageAdjustments\AdjustmentsController;
+use App\Features\Payroll\ManageDeMinimis\DeMinimisController;
 use App\Features\Payroll\ManageFinalPay\FinalPayController;
 use App\Features\Payroll\ManageLoans\LoansController;
 use App\Features\Payroll\ManageRecurringEarnings\RecurringEarningsController;
@@ -33,6 +35,7 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::delete('runs/{run}', [ProcessPayrollRunController::class, 'destroy'])->name('runs.destroy');
         Route::post('runs/{run}/adjustments', [AdjustmentsController::class, 'store'])->name('runs.adjustments.store');
         Route::post('runs/{run}/back-pay', BackPayController::class)->name('runs.back-pay');
+        Route::post('runs/{run}/service-charge', ServiceChargeController::class)->name('runs.service-charge');
         Route::delete('runs/{run}/adjustments/{adjustment}', [AdjustmentsController::class, 'destroy'])->name('runs.adjustments.destroy');
 
         Route::post('allowances', [RecurringEarningsController::class, 'store'])->name('allowances.store');
@@ -78,5 +81,8 @@ Route::middleware('auth')->prefix('payroll')->name('payroll.')->group(function (
         Route::get('statutory-rates', [StatutoryRatesController::class, 'index'])->name('statutory.index');
         Route::post('statutory-rates', [StatutoryRatesController::class, 'storeRate'])->name('statutory.store');
         Route::post('statutory-rates/tax', [StatutoryRatesController::class, 'storeTaxTable'])->name('statutory.tax.store');
+        Route::get('de-minimis', [DeMinimisController::class, 'index'])->name('de-minimis.index');
+        Route::post('de-minimis', [DeMinimisController::class, 'store'])->name('de-minimis.store');
+        Route::put('de-minimis/{benefit}', [DeMinimisController::class, 'update'])->name('de-minimis.update');
     });
 });

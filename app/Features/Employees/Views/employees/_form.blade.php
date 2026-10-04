@@ -41,6 +41,7 @@
     <div class="card-header"><h3 class="card-title">Compensation &amp; government IDs</h3></div>
     <div class="card-body row g-3">
         <x-form.select name="rate_type" label="Rate type" :options="$rateTypes" :value="$employee->rate_type" col="col-md-4" required />
+        <x-form.select name="pay_frequency" label="Pay frequency" :options="['semi_monthly' => 'Semi-monthly', 'monthly' => 'Monthly', 'weekly' => 'Weekly']" :value="$employee->pay_frequency ?? 'semi_monthly'" col="col-md-4" />
         <x-form.input name="basic_rate" label="Basic rate (₱)" type="number" step="0.01" min="0"
             :value="$employee->basic_rate?->toDecimal()" col="col-md-4" required />
         <div class="col-md-4 d-flex align-items-end">

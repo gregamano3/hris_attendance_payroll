@@ -2,6 +2,7 @@
 
 namespace App\Features\Payroll\CreatePayrollRun;
 
+use App\Features\Payroll\Enums\PayFrequency;
 use App\Features\Payroll\Enums\PayrollRunStatus;
 use App\Features\Payroll\Enums\PayrollRunType;
 use App\Features\Payroll\Models\PayrollRun;
@@ -23,6 +24,7 @@ class CreatePayrollRunController
             'period' => $period,
             'payDate' => $period->to,
             'types' => PayrollRunType::options(),
+            'frequencies' => PayFrequency::options(),
         ]);
     }
 
@@ -38,11 +40,14 @@ class CreatePayrollRunController
             'pay_date' => ['required', 'date', 'after_or_equal:period_start'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'annualize_tax' => ['boolean'],
+            'frequency' => ['nullable', Rule::enum(PayFrequency::class)],
         ]);
         $data['annualize_tax'] = $request->boolean('annualize_tax');
+        $data['frequency'] = PayFrequency::tryFrom((string) ($data['frequency'] ?? '')) ?? PayFrequency::SemiMonthly;
 
         $overlap = PayrollRun::query()
             ->where('type', PayrollRunType::Regular)
+            ->where('frequency', $data['frequency'])
             ->whereDate('period_start', '<=', $data['period_end'])
             ->whereDate('period_end', '>=', $data['period_start'])
             ->exists();
@@ -55,7 +60,7 @@ class CreatePayrollRunController
 
         $run = PayrollRun::query()->create([
             ...$data,
-            'name' => 'Payroll '.$period->label(),
+            'name' => ($data['frequency'] === PayFrequency::SemiMonthly ? 'Payroll ' : $data['frequency']->label().' payroll ').$period->label(),
             'type' => PayrollRunType::Regular,
             'status' => PayrollRunStatus::Draft,
             'created_by' => $request->user()?->id,

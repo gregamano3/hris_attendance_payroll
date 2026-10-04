@@ -21,11 +21,13 @@ use Illuminate\Support\Carbon;
  * @property string $label
  * @property Money $amount
  * @property TaxTreatment $tax_treatment
+ * @property int|null $de_minimis_benefit_id
+ * @property-read DeMinimisBenefit|null $deMinimisBenefit
  * @property Carbon $starts_on
  * @property Carbon|null $ends_on
  * @property-read Employee $employee
  */
-#[Fillable(['employee_id', 'label', 'amount', 'tax_treatment', 'starts_on', 'ends_on'])]
+#[Fillable(['employee_id', 'label', 'amount', 'tax_treatment', 'de_minimis_benefit_id', 'starts_on', 'ends_on'])]
 class RecurringEarning extends Model
 {
     use Auditable;
@@ -49,6 +51,14 @@ class RecurringEarning extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class)->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<DeMinimisBenefit, $this>
+     */
+    public function deMinimisBenefit(): BelongsTo
+    {
+        return $this->belongsTo(DeMinimisBenefit::class);
     }
 
     /**

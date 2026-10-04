@@ -21,7 +21,8 @@ use Illuminate\Support\Carbon;
  *    and capped at the approved minutes when overtime requires approval.
  *  - Rest days and holidays: everything worked counts, no late/undertime; time
  *    beyond the scheduled minutes is overtime.
- *  - Night differential: paid minutes between 22:00 and 06:00.
+ *  - Night differential: paid minutes between 22:00 and 06:00; the part
+ *    falling in overtime is reported separately (paid on the overtime rate).
  *  - Half-day leave: the morning (am) or afternoon (pm) half of the shift is
  *    on leave; the other half follows the normal rules.
  *  - Flexible shifts: late only after the core start, worked = time present
@@ -138,8 +139,17 @@ class AttendanceCalculator
             undertimeMinutes: $undertime,
             overtimeMinutes: $overtime,
             nightDiffMinutes: min($this->nightMinutes($paidStart, $paidEnd), $worked + $overtime),
+            nightDiffOvertimeMinutes: $this->nightOvertime($end, $end->copy()->addMinutes($overtime), $overtime),
             overbreakMinutes: $overbreak,
         );
+    }
+
+    /**
+     * Night minutes falling inside the overtime window.
+     */
+    private function nightOvertime(Carbon $from, Carbon $to, int $overtime): int
+    {
+        return $overtime > 0 ? min($this->nightMinutes($from, $to), $overtime) : 0;
     }
 
     /**
@@ -171,6 +181,7 @@ class AttendanceCalculator
             undertimeMinutes: $undertime,
             overtimeMinutes: $overtime,
             nightDiffMinutes: min($this->nightMinutes($timeIn, $timeOut), $worked + $overtime),
+            nightDiffOvertimeMinutes: $this->nightOvertime($timeOut->copy()->subMinutes($overtime), $timeOut, $overtime),
             overbreakMinutes: $overbreak,
         );
     }

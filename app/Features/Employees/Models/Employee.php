@@ -54,6 +54,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $regularized_at
  * @property Carbon|null $separated_at
  * @property RateType $rate_type
+ * @property string $pay_frequency
  * @property Money $basic_rate
  * @property bool $is_minimum_wage_earner
  * @property string|null $sss_no
@@ -74,7 +75,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'employee_no', 'user_id', 'first_name', 'middle_name', 'last_name', 'suffix', 'birth_date', 'gender',
     'civil_status', 'email', 'mobile', 'address', 'department_id', 'branch_id', 'cost_center_id', 'position_id', 'supervisor_id', 'employment_type', 'status',
-    'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'basic_rate', 'is_minimum_wage_earner', 'sss_no', 'philhealth_no',
+    'hired_at', 'regularized_at', 'separated_at', 'rate_type', 'pay_frequency', 'basic_rate', 'is_minimum_wage_earner', 'sss_no', 'philhealth_no',
     'pagibig_no', 'tin', 'bank_name', 'bank_account_name', 'bank_account_no',
 ])]
 #[UseFactory(EmployeeFactory::class)]

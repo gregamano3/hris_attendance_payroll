@@ -83,6 +83,7 @@ class EmployeeRequest extends FormRequest
                 'nullable', 'date', 'after_or_equal:hired_at',
             ],
             'rate_type' => ['required', Rule::enum(RateType::class)],
+            'pay_frequency' => ['nullable', Rule::in(['semi_monthly', 'monthly', 'weekly'])],
             'basic_rate' => ['required', 'numeric', 'gt:0', 'max:99999999'],
             'is_minimum_wage_earner' => ['boolean'],
             'bank_name' => ['nullable', 'required_with:bank_account_no', 'string', 'max:100'],

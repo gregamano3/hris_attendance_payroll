@@ -968,6 +968,12 @@ return [
             'icon' => 'bi bi-bank',
             'can' => 'settings.manage',
         ],
+        [
+            'text' => 'De minimis benefits',
+            'route' => 'payroll.de-minimis.index',
+            'icon' => 'bi bi-gift',
+            'can' => 'settings.manage',
+        ],
         ['header' => 'ADMINISTRATION', 'can' => 'users.manage'],
         [
             'text' => 'Users',
