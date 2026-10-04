@@ -16,7 +16,7 @@ Thanks for your interest in improving HRIS · Attendance · Payroll!
 make setup     # first run: builds images, installs deps, migrates & seeds
 make up        # start the stack -> http://localhost:8080
 make check     # pint + larastan + pest
-make e2e       # Playwright end-to-end tests
+make e2e       # Playwright end-to-end tests (isolated stack on :8090)
 ```
 
 Composer, Artisan and npm run inside containers — no local PHP toolchain required.

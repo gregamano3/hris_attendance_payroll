@@ -1,0 +1,73 @@
+name: E2E
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright (Docker stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LOGIN_THROTTLE: 200
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          sed -i "s/^UID=.*/UID=$(id -u)/; s/^GID=.*/GID=$(id -g)/" .env
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            e2e/package-lock.json
+
+      - name: Build front-end assets
+        run: npm ci && npm run build
+
+      - name: Start the stack
+        run: |
+          docker compose build app
+          docker compose up -d --wait app web db redis queue
+
+      - name: Install the application
+        run: |
+          docker compose exec -T app composer install --no-interaction --no-progress
+          docker compose exec -T app php artisan key:generate
+          docker compose exec -T app php artisan adminlte:install --only=assets --only=vendor_assets --force -n
+          docker compose restart queue
+
+      - name: Install Playwright
+        working-directory: e2e
+        run: npm ci && npx playwright install --with-deps chromium
+
+      - name: Run Playwright
+        working-directory: e2e
+        env:
+          E2E_BASE_URL: http://localhost:8080
+          E2E_RESET_CMD: docker compose exec -T app php artisan migrate:fresh --seed --force
+        run: npx playwright test
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 14
+
+      - name: Application logs
+        if: failure()
+        run: |
+          docker compose logs app web queue --tail=200
+          cat storage/logs/*.log 2>/dev/null | tail -200 || true

@@ -56,7 +56,19 @@ stan: ## Static analysis (Larastan)
 
 check: lint stan test ## Run all quality checks
 
-e2e: ## Run Playwright end-to-end tests
-	cd e2e && npm ci && npx playwright test
+# Isolated stack for end-to-end tests: separate compose project, volumes and ports.
+E2E_ENV := COMPOSE_PROJECT_NAME=hris-e2e APP_PORT=8090 FORWARD_DB_PORT=54321 FORWARD_REDIS_PORT=63791 FORWARD_MAILPIT_DASHBOARD_PORT=8027 LOGIN_THROTTLE=200
 
-.PHONY: help setup assets up down logs shell artisan composer npm fresh test lint fix stan check e2e
+e2e-up: ## Start the isolated end-to-end stack on http://localhost:8090
+	$(E2E_ENV) $(DC) up -d --wait app web db redis queue
+
+e2e-down: ## Stop the end-to-end stack and drop its data
+	$(E2E_ENV) $(DC) down -v
+
+e2e: e2e-up ## Run Playwright end-to-end tests against the isolated stack
+	cd e2e && npm ci --no-audit --no-fund && npx playwright install chromium
+	cd e2e && E2E_BASE_URL=http://localhost:8090 \
+		E2E_RESET_CMD="$(E2E_ENV) docker compose exec -T app php artisan migrate:fresh --seed --force" \
+		npx playwright test
+
+.PHONY: help setup assets up down logs shell artisan composer npm fresh test lint fix stan check e2e e2e-up e2e-down
