@@ -4,6 +4,7 @@ namespace App\Features\Dashboard\ShowDashboard;
 
 use App\Features\Attendance\Queries\AttendanceToday;
 use App\Features\Employees\Queries\EmployeeDirectory;
+use App\Features\Payroll\Queries\LatestPayroll;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,10 +22,11 @@ class GetDashboardStats
     public function __construct(
         private EmployeeDirectory $employees,
         private AttendanceToday $attendance,
+        private LatestPayroll $payroll,
     ) {}
 
     /**
-     * @return array{active_users: int, active_employees: int, clocked_in_today: int, pending_leaves: int}
+     * @return array{active_users: int, active_employees: int, clocked_in_today: int, pending_leaves: int, last_payroll: array{name: string, net: string}|null}
      */
     public function handle(): array
     {
@@ -33,6 +35,9 @@ class GetDashboardStats
             'active_employees' => $this->employees->activeCount(),
             'clocked_in_today' => $this->attendance->clockedIn(),
             'pending_leaves' => $this->attendance->pendingLeaves(),
+            'last_payroll' => ($run = $this->payroll->finalized())
+                ? ['name' => $run->period()->label(), 'net' => $run->total_net->format()]
+                : null,
         ]);
     }
 

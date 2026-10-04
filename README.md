@@ -58,6 +58,28 @@ punches, shift assignments, holidays or approved leaves change, and `php artisan
 - **Night differential** is paid time between 22:00 and 06:00. Overnight shifts are supported.
 - On rest days and holidays all time worked counts, and anything beyond the scheduled hours becomes overtime.
 
+## Payroll rules
+
+Payroll runs are semi-monthly by default and move through **draft → computed → finalized**. A finalized run is
+locked and its payslips become visible to employees. `PayslipCalculator` is pure and covered by hand-computed tests.
+
+| Item | Rule |
+|------|------|
+| Daily rate | monthly × 12 ÷ `PAYROLL_DAYS_PER_YEAR` (default 261), or the daily rate |
+| Monthly-rated | ½ monthly salary − absences − late/undertime, plus premiums not already covered by the salary |
+| Daily-rated | hours worked + unworked regular holidays + paid leaves |
+| Overtime | 125% on ordinary days; day rate × 130% on rest days and holidays |
+| Rest / special day | 130% (150% when a special day falls on a rest day) |
+| Regular holiday | 200% (260% on a rest day) |
+| Night differential | +10% of the applicable hourly rate |
+| SSS / PhilHealth / Pag-IBIG | monthly amount on the monthly-equivalent pay, half deducted per run |
+| Withholding tax | BIR TRAIN semi-monthly table on taxable pay after employee contributions |
+
+Statutory parameters (SSS brackets, PhilHealth rate/floor/ceiling, Pag-IBIG, BIR tables) are **effective-dated
+records** that can be edited under *Payroll → Statutory rates*, so a rate change doesn't need a release. The seeded
+values match the published rates at the time of writing. Verify them against the latest SSS, PhilHealth, HDMF and
+BIR issuances.
+
 ## Roles
 
 | Role | Can |

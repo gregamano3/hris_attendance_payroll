@@ -25,6 +25,13 @@
         </div>
     </div>
 
+    @if ($stats['last_payroll'])
+        <div class="callout callout-success">
+            Latest finalized payroll: <strong>{{ $stats['last_payroll']['name'] }}</strong>, net pay {{ $stats['last_payroll']['net'] }}
+            @can('payroll.view') · <a href="{{ route('payroll.runs.index') }}">Payroll runs</a>@endcan
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body">
             Welcome back, <strong>{{ auth()->user()->name }}</strong>.
