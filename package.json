@@ -7,7 +7,7 @@
         "dev": "vite"
     },
     "devDependencies": {
-        "@fontsource/source-sans-3": "^5.3.0",
+        "@fontsource/source-sans-3": "^5.3.1",
         "bootstrap": "^5.3.8",
         "bootstrap-icons": "^1.13.1",
         "concurrently": "^10.0.3",
